@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 11-drop-citizen-messagerie
+      author: team-resources-relationnelles
+      comment: "Suppression de la table de jointure citizen_messagerie — non présente dans le MCD"
+      changes:
+        - dropTable:
+            tableName: citizen_messagerie

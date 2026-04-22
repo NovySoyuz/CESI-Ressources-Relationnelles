@@ -29,3 +29,6 @@ databaseChangeLog:
   - include:
       file: changelogs/10-create-interactions-comments.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changelogs/11-drop-citizen-messagerie.yaml
+      relativeToChangelogFile: true
