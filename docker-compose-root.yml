@@ -50,7 +50,7 @@ services:
     volumes:
       - ./rr-backend:/app
     env_file:
-      - ./rr-backend/.env
+      - .env
     command: python manage.py runserver 0.0.0.0:8000
     depends_on:
       postgres:
