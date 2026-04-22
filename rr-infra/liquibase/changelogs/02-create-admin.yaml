@@ -1,0 +1,35 @@
+databaseChangeLog:
+  - changeSet:
+      id: 02-create-admin
+      author: team-resources-relationnelles
+      comment: "Création de la table Admin (hérite de User)"
+      changes:
+        - createTable:
+            tableName: admin
+            columns:
+              - column:
+                  name: admin_id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    foreignKeyName: fk_admin_user
+                    references: "user(user_id)"
+              - column:
+                  name: admin_created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: NOW()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: admin_is_super_admin
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: admin_token
+                  type: VARCHAR(512)
+              - column:
+                  name: admin_refresh_token
+                  type: VARCHAR(512)

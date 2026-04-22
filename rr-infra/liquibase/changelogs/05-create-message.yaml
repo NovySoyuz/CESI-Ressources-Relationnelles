@@ -1,0 +1,67 @@
+databaseChangeLog:
+  - changeSet:
+      id: 05-create-message
+      author: team-resources-relationnelles
+      comment: "Création de la table Message"
+      changes:
+        - createTable:
+            tableName: message
+            columns:
+              - column:
+                  name: message_id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: messagerie_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_message_messagerie
+                    references: messagerie(messagerie_id)
+              - column:
+                  name: author_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_message_citizen
+                    references: citizen(user_id)
+              - column:
+                  name: message_content
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: message_created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: NOW()
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 05b-create-citizen-messagerie
+      author: team-resources-relationnelles
+      comment: "Table de jointure : un citoyen appartient à plusieurs messageries (relation N..N)"
+      changes:
+        - createTable:
+            tableName: citizen_messagerie
+            columns:
+              - column:
+                  name: citizen_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_cm_citizen
+                    references: citizen(user_id)
+              - column:
+                  name: messagerie_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_cm_messagerie
+                    references: messagerie(messagerie_id)
+        - addPrimaryKey:
+            tableName: citizen_messagerie
+            columnNames: "citizen_id, messagerie_id"
+            constraintName: pk_citizen_messagerie

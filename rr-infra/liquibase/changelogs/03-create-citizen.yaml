@@ -1,0 +1,41 @@
+databaseChangeLog:
+  - changeSet:
+      id: 03-create-citizen
+      author: team-resources-relationnelles
+      comment: "Création de la table Citizen (hérite de User)"
+      changes:
+        - createTable:
+            tableName: citizen
+            columns:
+              - column:
+                  name: user_id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    foreignKeyName: fk_citizen_user
+                    references: "user(user_id)"
+              - column:
+                  name: user_created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: NOW()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_la_mode
+                  type: VARCHAR(10)
+                  defaultValue: "light"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_is_actived
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_token
+                  type: VARCHAR(512)
+              - column:
+                  name: user_refresh_token
+                  type: VARCHAR(512)

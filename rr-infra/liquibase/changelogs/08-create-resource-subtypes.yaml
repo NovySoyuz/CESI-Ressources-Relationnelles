@@ -1,0 +1,209 @@
+databaseChangeLog:
+  - changeSet:
+      id: 08a-create-resource-reading-sheet
+      author: team-resources-relationnelles
+      comment: "Sous-type ResourceReadingSheet (fiche de lecture)"
+      changes:
+        - createTable:
+            tableName: resource_reading_sheet
+            columns:
+              - column:
+                  name: resource_id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    foreignKeyName: fk_rrs_resource
+                    references: resource(resource_id)
+              - column:
+                  name: book_title
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: book_author
+                  type: VARCHAR(255)
+              - column:
+                  name: summary
+                  type: TEXT
+
+  - changeSet:
+      id: 08b-create-resource-games
+      author: team-resources-relationnelles
+      comment: "Sous-type ResourceGames"
+      changes:
+        - createTable:
+            tableName: resource_games
+            columns:
+              - column:
+                  name: resource_id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    foreignKeyName: fk_rg_resource
+                    references: resource(resource_id)
+              - column:
+                  name: game_url
+                  type: VARCHAR(512)
+              - column:
+                  name: game_platform
+                  type: VARCHAR(100)
+              - column:
+                  name: game_instructions
+                  type: TEXT
+
+  - changeSet:
+      id: 08c-create-resource-videos
+      author: team-resources-relationnelles
+      comment: "Sous-type ResourceVideos"
+      changes:
+        - createTable:
+            tableName: resource_videos
+            columns:
+              - column:
+                  name: resource_id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    foreignKeyName: fk_rv_resource
+                    references: resource(resource_id)
+              - column:
+                  name: video_url
+                  type: VARCHAR(512)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: video_duration
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: video_platform
+                  type: VARCHAR(100)
+
+  - changeSet:
+      id: 08d-create-resource-pdf
+      author: team-resources-relationnelles
+      comment: "Sous-type ResourcePDF"
+      changes:
+        - createTable:
+            tableName: resource_pdf
+            columns:
+              - column:
+                  name: resource_id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    foreignKeyName: fk_rpdf_resource
+                    references: resource(resource_id)
+              - column:
+                  name: pdf_url
+                  type: VARCHAR(512)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: pdf_publisher
+                  type: VARCHAR(255)
+              - column:
+                  name: pdf_page_count
+                  type: INTEGER
+              - column:
+                  name: pdf_size
+                  type: BIGINT
+
+  - changeSet:
+      id: 08e-create-resource-activity
+      author: team-resources-relationnelles
+      comment: "Sous-type ResourceActivity"
+      changes:
+        - createTable:
+            tableName: resource_activity
+            columns:
+              - column:
+                  name: resource_id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    foreignKeyName: fk_ract_resource
+                    references: resource(resource_id)
+              - column:
+                  name: activity_instructions
+                  type: TEXT
+              - column:
+                  name: activity_duration
+                  type: INTEGER
+              - column:
+                  name: activity_required_materials
+                  type: TEXT
+
+  - changeSet:
+      id: 08f-create-resource-article
+      author: team-resources-relationnelles
+      comment: "Sous-type ResourceArticle"
+      changes:
+        - createTable:
+            tableName: resource_article
+            columns:
+              - column:
+                  name: resource_id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    foreignKeyName: fk_rart_resource
+                    references: resource(resource_id)
+              - column:
+                  name: article_url
+                  type: VARCHAR(512)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: article_publisher
+                  type: VARCHAR(255)
+
+  - changeSet:
+      id: 08g-create-resource-challenge-card
+      author: team-resources-relationnelles
+      comment: "Sous-type ResourceChallengeCard"
+      changes:
+        - createTable:
+            tableName: resource_challenge_card
+            columns:
+              - column:
+                  name: resource_id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    foreignKeyName: fk_rcc_resource
+                    references: resource(resource_id)
+              - column:
+                  name: challenge_card_duration
+                  type: INTEGER
+
+  - changeSet:
+      id: 08h-create-resource-exercise
+      author: team-resources-relationnelles
+      comment: "Sous-type ResourceExercise"
+      changes:
+        - createTable:
+            tableName: resource_exercise
+            columns:
+              - column:
+                  name: resource_id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    foreignKeyName: fk_rex_resource
+                    references: resource(resource_id)
+              - column:
+                  name: exercise_instructions
+                  type: TEXT
+              - column:
+                  name: exercise_duration
+                  type: INTEGER

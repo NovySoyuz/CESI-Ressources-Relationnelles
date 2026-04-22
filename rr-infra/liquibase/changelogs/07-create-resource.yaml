@@ -1,0 +1,51 @@
+databaseChangeLog:
+  - changeSet:
+      id: 07-create-resource
+      author: team-resources-relationnelles
+      comment: "Création de la table Resource (entité centrale)"
+      changes:
+        - createTable:
+            tableName: resource
+            columns:
+              - column:
+                  name: resource_id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: resource_author
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_resource_citizen
+                    references: citizen(user_id)
+              - column:
+                  name: resource_created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: NOW()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: resource_last_modif
+                  type: TIMESTAMP
+                  defaultValueComputed: NOW()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: resource_is_visible
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: resource_title
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: resource_description
+                  type: TEXT
+              - column:
+                  name: resource_label
+                  type: VARCHAR(100)

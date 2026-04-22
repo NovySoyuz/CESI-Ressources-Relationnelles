@@ -1,0 +1,85 @@
+databaseChangeLog:
+  - changeSet:
+      id: 10a-create-interactions
+      author: team-resources-relationnelles
+      comment: "Table Interactions : citoyen interagit avec une resource (like, favori, bookmark)"
+      changes:
+        - createTable:
+            tableName: interactions
+            columns:
+              - column:
+                  name: citizen_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_inter_citizen
+                    references: citizen(user_id)
+              - column:
+                  name: resource_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_inter_resource
+                    references: resource(resource_id)
+              - column:
+                  name: is_liked
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_favorise
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_bookmark
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            tableName: interactions
+            columnNames: "citizen_id, resource_id"
+            constraintName: pk_interactions
+
+  - changeSet:
+      id: 10b-create-comments
+      author: team-resources-relationnelles
+      comment: "Table Comments : commentaires laissés par un citoyen sur une resource"
+      changes:
+        - createTable:
+            tableName: comments
+            columns:
+              - column:
+                  name: comments_id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: citizen_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_comment_citizen
+                    references: citizen(user_id)
+              - column:
+                  name: resource_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_comment_resource
+                    references: resource(resource_id)
+              - column:
+                  name: comments_text
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: comments_created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: NOW()
+                  constraints:
+                    nullable: false

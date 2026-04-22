@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - changeSet:
+      id: 04-create-messagerie
+      author: team-resources-relationnelles
+      comment: "Création de la table Messagerie"
+      changes:
+        - createTable:
+            tableName: messagerie
+            columns:
+              - column:
+                  name: messagerie_id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false

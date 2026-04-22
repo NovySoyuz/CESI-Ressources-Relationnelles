@@ -1,0 +1,42 @@
+databaseChangeLog:
+  - changeSet:
+      id: 06-create-relation
+      author: team-resources-relationnelles
+      comment: "Création de la table Relation"
+      changes:
+        - createTable:
+            tableName: relation
+            columns:
+              - column:
+                  name: relation_id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: label
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+                    unique: true
+
+  - changeSet:
+      id: 06b-create-category
+      author: team-resources-relationnelles
+      comment: "Création de la table Category"
+      changes:
+        - createTable:
+            tableName: category
+            columns:
+              - column:
+                  name: category_id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: label
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+                    unique: true

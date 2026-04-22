@@ -1,0 +1,90 @@
+services:
+
+  # ─── 1. Base de données ────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: rr_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - rr_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ─── 2. Migrations Liquibase ───────────────────────────────────────────────
+  liquibase:
+    image: liquibase/liquibase:4.27
+    container_name: rr_liquibase
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      LIQUIBASE_COMMAND_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      LIQUIBASE_COMMAND_USERNAME: ${POSTGRES_USER}
+      LIQUIBASE_COMMAND_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./rr-infra/liquibase:/liquibase/changelog
+    working_dir: /liquibase/changelog
+    command: ["--changelog-file=db.changelog-master.yaml", "update"]
+    networks:
+      - rr_network
+
+  # ─── 3. Django REST API ────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./rr-backend
+      dockerfile: Dockerfile
+    container_name: rr_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./rr-backend:/app
+    env_file:
+      - ./rr-backend/.env
+    command: python manage.py runserver 0.0.0.0:8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      liquibase:
+        condition: service_completed_successfully
+    networks:
+      - rr_network
+
+  # ─── 4. Angular ────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./rr-frontend
+      dockerfile: Dockerfile
+    container_name: rr_frontend
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./rr-frontend:/app
+    environment:
+      - NODE_ENV=development
+      - NG_CLI_ANALYTICS=false
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
+    networks:
+      - rr_network
+
+volumes:
+  postgres_data:
+    name: rr_pgdata
+
+networks:
+  rr_network:
+    name: rr_network
+    driver: bridge

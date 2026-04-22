@@ -1,0 +1,8 @@
+# Copier ce fichier en terraform.tfvars et remplir les valeurs
+# Ne jamais committer terraform.tfvars (déjà dans .gitignore)
+
+aws_region          = "eu-west-3"
+postgres_db         = "ressources_relationnelles"
+postgres_user       = "rr_user"
+postgres_password   = "CHANGER_MOI"
+ssh_public_key_path = "~/.ssh/id_rsa.pub"
