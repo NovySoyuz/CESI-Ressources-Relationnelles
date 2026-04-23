@@ -19,7 +19,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'users',
     'interactions',
-    'ressources',
+    'resources',
     'administration',
 ]
 
