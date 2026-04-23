@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 12-drop-message
+      author: team-resources-relationnelles
+      comment: "Suppression de la table message, changement de fonctionnalité dans le CdC"
+      changes:
+        - dropTable:
+            tableName: message

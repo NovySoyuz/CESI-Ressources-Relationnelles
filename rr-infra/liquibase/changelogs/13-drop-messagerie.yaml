@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 13-drop-messagerie
+      author: team-resources-relationnelles
+      comment: "Suppression de la table de jointure messagerie, changement de fonctionnalité dans le CdC"
+      changes:
+        - dropTable:
+            tableName: messagerie
