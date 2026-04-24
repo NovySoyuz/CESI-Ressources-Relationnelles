@@ -25,7 +25,7 @@ class RegisterSerializer(serializers.Serializer):
         min_length=8,
         write_only=True,    # jamais retourné dans la réponse
     )
-    user_la_mode = serializers.ChoiceField(
+    user_is_modo = serializers.ChoiceField(
         choices=['light', 'dark'],
         default='light',
         required=False,
@@ -58,7 +58,7 @@ class RegisterSerializer(serializers.Serializer):
         """
         # Extraction du mot de passe avant la création du User
         raw_password = validated_data.pop('password')
-        la_mode      = validated_data.pop('user_la_mode', 'light')
+        is_modo      = validated_data.pop('user_is_modo', 'light')
 
         # Création du User
         user = User(
@@ -73,7 +73,7 @@ class RegisterSerializer(serializers.Serializer):
         # user_created_at : non fourni → Postgres applique DEFAULT now()
         Citizen.objects.create(
             user=user,
-            user_la_mode=la_mode,
+            user_is_modo=is_modo,
             user_is_actived=True,
         )
 
@@ -139,7 +139,7 @@ class LoginSerializer(TokenObtainPairSerializer):
             'user_fname': self.user.user_fname,
             'user_lname': self.user.user_lname,
             'user_mail':  self.user.user_mail,
-            'user_la_mode': citizen.user_la_mode,
+            'user_is_modo': citizen.user_is_modo,
         }
 
         return data

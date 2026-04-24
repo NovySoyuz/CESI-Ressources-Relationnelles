@@ -41,7 +41,7 @@ class RegisterView(APIView):
         "user_lname":   "Dev",
         "user_mail":    "florent@example.com",
         "password":     "monMotDePasse123",
-        "user_la_mode": "light"   <- optionnel, défaut "light"
+        "user_is_modo": "light"   <- optionnel, défaut "light"
     }
 
     Réponse 201 :
@@ -100,7 +100,7 @@ class LoginView(APIView):
             "user_fname":   "Florent",
             "user_lname":   "Dev",
             "user_mail":    "florent@example.com",
-            "user_la_mode": "light"
+            "user_is_modo": "light"
         }
     }
 
