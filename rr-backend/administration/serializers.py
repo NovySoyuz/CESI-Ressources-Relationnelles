@@ -1,91 +1,90 @@
-# administration/serializers.py
-
 from rest_framework import serializers
-from users.models import User, Citizen
-from administration.models import Admin
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.exceptions import AuthenticationFailed
+
+from users.models import User
+from .models import Admin
 
 
-# ──────────────────────────────────────────────────────────────
-# User (lecture seule — géré par l'app users)
-# ──────────────────────────────────────────────────────────────
+# ── Auth ──────────────────────────────────────────────────────────────────────
+
+class AdminLoginSerializer(TokenObtainPairSerializer):
+    """
+    Authentification d'un Admin par email + mot de passe.
+    Vérifie que l'utilisateur possède un profil Admin avant de délivrer les tokens.
+    Persiste les tokens en BDD (admin_token + admin_refresh_token).
+    """
+
+    def validate(self, attrs: dict) -> dict:
+        data = super().validate(attrs)
+
+        try:
+            admin = self.user.admin_profile
+        except Admin.DoesNotExist:
+            raise AuthenticationFailed(
+                "Profil administrateur introuvable.",
+                code='admin_not_found',
+            )
+
+        admin.admin_token = data['access']
+        admin.admin_refresh_token = data['refresh']
+        admin.save(update_fields=['admin_token', 'admin_refresh_token'])
+
+        data['user'] = {
+            'user_id':        str(self.user.user_id),
+            'user_fname':     self.user.user_fname,
+            'user_lname':     self.user.user_lname,
+            'user_mail':      self.user.user_mail,
+            'is_super_admin': admin.admin_is_super_admin,
+        }
+
+        return data
+
+
+# ── CRUD ──────────────────────────────────────────────────────────────────────
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = [
-            "user_id",
-            "user_fname",
-            "user_lname",
-            "user_mail",
-        ]
+        fields = ['user_id', 'user_fname', 'user_lname', 'user_mail']
         read_only_fields = fields
 
-
-# ──────────────────────────────────────────────────────────────
-# Admin — liste
-# ──────────────────────────────────────────────────────────────
 
 class AdminListSerializer(serializers.ModelSerializer):
-    user_fname        = serializers.CharField(source="admin_id.user_fname", read_only=True)
-    user_lname        = serializers.CharField(source="admin_id.user_lname", read_only=True)
-    user_mail         = serializers.EmailField(source="admin_id.user_mail",  read_only=True)
-    is_active         = serializers.BooleanField(source="admin_id.is_active", read_only=True)
+    user_fname = serializers.CharField(source='admin_id.user_fname', read_only=True)
+    user_lname = serializers.CharField(source='admin_id.user_lname', read_only=True)
+    user_mail  = serializers.EmailField(source='admin_id.user_mail',  read_only=True)
+    is_active  = serializers.BooleanField(source='admin_id.is_active', read_only=True)
 
     class Meta:
         model = Admin
         fields = [
-            "admin_id",
-            "user_fname",
-            "user_lname",
-            "user_mail",
-            "is_active",
-            "admin_is_super_admin",
-            "admin_created_at",
+            'admin_id', 'user_fname', 'user_lname', 'user_mail',
+            'is_active', 'admin_is_super_admin', 'admin_created_at',
         ]
         read_only_fields = fields
 
 
-# ──────────────────────────────────────────────────────────────
-# Admin — détail (inclut les tokens, pour usage interne)
-# ──────────────────────────────────────────────────────────────
-
 class AdminDetailSerializer(serializers.ModelSerializer):
-    user              = UserSerializer(source="admin_id", read_only=True)
-    is_active         = serializers.BooleanField(source="admin_id.is_active", read_only=True)
+    user      = UserSerializer(source='admin_id', read_only=True)
+    is_active = serializers.BooleanField(source='admin_id.is_active', read_only=True)
 
     class Meta:
         model = Admin
         fields = [
-            "admin_id",
-            "user",
-            "is_active",
-            "admin_is_super_admin",
-            "admin_created_at",
-            "admin_token",
-            "admin_refresh_token",
+            'admin_id', 'user', 'is_active',
+            'admin_is_super_admin', 'admin_created_at',
+            'admin_token', 'admin_refresh_token',
         ]
-        read_only_fields = [
-            "admin_id",
-            "admin_created_at",
-            "admin_token",
-            "admin_refresh_token",
-        ]
+        read_only_fields = ['admin_id', 'admin_created_at', 'admin_token', 'admin_refresh_token']
 
-
-# ──────────────────────────────────────────────────────────────
-# Admin — création (POST)
-# Reçoit un user_id existant et crée l'entrée admin
-# ──────────────────────────────────────────────────────────────
 
 class AdminCreateSerializer(serializers.ModelSerializer):
     user_id = serializers.UUIDField(write_only=True)
 
     class Meta:
         model = Admin
-        fields = [
-            "user_id",
-            "admin_is_super_admin",
-        ]
+        fields = ['user_id', 'admin_is_super_admin']
 
     def validate_user_id(self, value):
         if not User.objects.filter(pk=value).exists():
@@ -95,17 +94,11 @@ class AdminCreateSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        user = User.objects.get(pk=validated_data.pop("user_id"))
+        user = User.objects.get(pk=validated_data.pop('user_id'))
         return Admin.objects.create(admin_id=user, **validated_data)
 
-
-# ──────────────────────────────────────────────────────────────
-# Admin — mise à jour (PATCH)
-# ──────────────────────────────────────────────────────────────
 
 class AdminUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Admin
-        fields = [
-            "admin_is_super_admin",
-        ]
+        fields = ['admin_is_super_admin']
