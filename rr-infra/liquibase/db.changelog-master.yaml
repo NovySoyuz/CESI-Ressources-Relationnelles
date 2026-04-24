@@ -1,40 +1,7 @@
 databaseChangeLog:
-  - include:
-      file: changelogs/01-create-user.yaml
+  - includeAll:
+      path: changelogs/v0.0.0/
       relativeToChangelogFile: true
-  - include:
-      file: changelogs/02-create-admin.yaml
-      relativeToChangelogFile: true
-  - include:
-      file: changelogs/03-create-citizen.yaml
-      relativeToChangelogFile: true
-  - include:
-      file: changelogs/04-create-messagerie.yaml
-      relativeToChangelogFile: true
-  - include:
-      file: changelogs/05-create-message.yaml
-      relativeToChangelogFile: true
-  - include:
-      file: changelogs/06-create-relation-category.yaml
-      relativeToChangelogFile: true
-  - include:
-      file: changelogs/07-create-resource.yaml
-      relativeToChangelogFile: true
-  - include:
-      file: changelogs/08-create-resource-subtypes.yaml
-      relativeToChangelogFile: true
-  - include:
-      file: changelogs/09-create-resource-relations.yaml
-      relativeToChangelogFile: true
-  - include:
-      file: changelogs/10-create-interactions-comments.yaml
-      relativeToChangelogFile: true
-  - include:
-      file: changelogs/11-drop-citizen-messagerie.yaml
-      relativeToChangelogFile: true
-  - include:
-      file: changelogs/12-drop-message.yaml
-      relativeToChangelogFile: true
-  - include:
-      file: changelogs/13-drop-messagerie.yaml
+  - includeAll:
+      path: changelogs/v0.0.1/
       relativeToChangelogFile: true
