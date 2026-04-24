@@ -1,9 +1,9 @@
-from . import views
+# administration/urls.py
+
 from django.urls import path
-from django.http import JsonResponse
-from django.urls import include, path
+from administration.views import AdminListCreateView, AdminDetailView
 
 urlpatterns = [
-    path('', views.test),
-   
+    path("admins/",          AdminListCreateView.as_view(), name="admin-list-create"),
+    path("admins/<uuid:admin_id>/", AdminDetailView.as_view(),        name="admin-detail"),
 ]
