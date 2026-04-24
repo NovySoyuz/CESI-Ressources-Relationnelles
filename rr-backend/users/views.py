@@ -17,8 +17,6 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from rest_framework_simplejwt.views       import TokenRefreshView
-from rest_framework_simplejwt.tokens      import RefreshToken
-from rest_framework_simplejwt.exceptions  import TokenError, InvalidToken
 
 from .models      import Citizen
 from .serializers import RegisterSerializer, LoginSerializer
@@ -41,7 +39,7 @@ class RegisterView(APIView):
         "user_lname":   "Dev",
         "user_mail":    "florent@example.com",
         "password":     "monMotDePasse123",
-        "user_is_modo": "light"   <- optionnel, défaut "light"
+        "user_is_modo": "false"
     }
 
     Réponse 201 :
@@ -100,7 +98,7 @@ class LoginView(APIView):
             "user_fname":   "Florent",
             "user_lname":   "Dev",
             "user_mail":    "florent@example.com",
-            "user_is_modo": "light"
+            "user_is_modo": "false"
         }
     }
 
@@ -213,25 +211,6 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        refresh_token_str = request.data.get('refresh')
-
-        if not refresh_token_str:
-            return Response(
-                {'detail': 'Le refresh token est requis pour se déconnecter.'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # ── Blacklist SimpleJWT ────────────────────────────────────────────
-        try:
-            token = RefreshToken(refresh_token_str)
-            token.blacklist()
-        except TokenError:
-            # Token déjà expiré ou invalide — on continue quand même
-            # pour révoquer en BDD (nettoyage cohérent).
-            pass
-
-        # ── Révocation en BDD ──────────────────────────────────────────────
-        # request.user est l'instance User injectée par l'authentication backend
         try:
             request.user.citizen.invalidate_tokens()
         except Citizen.DoesNotExist:
