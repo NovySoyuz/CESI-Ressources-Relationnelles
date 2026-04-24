@@ -25,11 +25,7 @@ class RegisterSerializer(serializers.Serializer):
         min_length=8,
         write_only=True,    # jamais retourné dans la réponse
     )
-    user_is_modo = serializers.ChoiceField(
-        choices=['light', 'dark'],
-        default='light',
-        required=False,
-    )
+    user_is_modo = serializers.BooleanField(default=False, required=False)
 
     def validate_user_mail(self, value: str) -> str:
         """Vérifie qu'aucun compte n'existe déjà avec cet email."""
@@ -58,7 +54,7 @@ class RegisterSerializer(serializers.Serializer):
         """
         # Extraction du mot de passe avant la création du User
         raw_password = validated_data.pop('password')
-        is_modo      = validated_data.pop('user_is_modo', 'light')
+        is_modo      = validated_data.pop('user_is_modo', False)
 
         # Création du User
         user = User(
@@ -86,6 +82,7 @@ class RegisterSerializer(serializers.Serializer):
             'user_fname': instance.user_fname,
             'user_lname': instance.user_lname,
             'user_mail':  instance.user_mail,
+            'user_is_modo': instance.citizen.user_is_modo, # Optionnel : pour confirmer au front
         }
 
 

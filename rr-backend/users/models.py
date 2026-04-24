@@ -100,9 +100,8 @@ class Citizen(models.Model):
         default=timezone.now,
         editable=False,
     )
-    user_is_modo = models.CharField(
-        max_length=10,
-        default='light',
+    user_is_modo = models.BooleanField(
+        default=False,
         db_column='user_is_modo',
     )
     user_is_actived = models.BooleanField(
