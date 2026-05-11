@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 99-tag-v0.0.2
+      author: team-resources-relationnelles
+      changes:
+        - tagDatabase:
+            tag: v0.0.2

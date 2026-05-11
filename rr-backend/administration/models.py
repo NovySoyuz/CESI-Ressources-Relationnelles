@@ -30,6 +30,7 @@ class Admin(models.Model):
     )
 
     class Meta:
+        managed = False
         app_label = "administration"
         db_table = "admin"
 

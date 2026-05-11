@@ -8,7 +8,7 @@ class InteractionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Interaction
-        fields = ['citizen_id', 'resource_id', 'is_liked', 'is_favorise', 'is_bookmark']
+        fields = ['citizen_id', 'resource_id', 'is_liked', 'is_favorise', 'is_bookmark', 'is_exploited']
 
 
 class CommentSerializer(serializers.ModelSerializer):

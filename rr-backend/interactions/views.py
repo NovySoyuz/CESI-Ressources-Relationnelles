@@ -3,7 +3,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
-from .models import Interaction, Comment, Citizen, Resource
+from .models import Interaction, Comment
+from users.models import Citizen
+from resources.models import Resource
 from .serializers import InteractionSerializer, CommentSerializer
 
 
@@ -24,7 +26,8 @@ class InteractionView(APIView):
                 'resource_id': str(resource_id),
                 'is_liked': False,
                 'is_favorise': False,
-                'is_bookmark': False
+                'is_bookmark': False,
+                'is_exploited': False,
             })
 
     def post(self, request, resource_id):
