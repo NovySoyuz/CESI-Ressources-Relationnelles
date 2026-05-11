@@ -1,12 +1,14 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from .models import Interaction, Comment
 from users.models import Citizen
 from resources.models import Resource
 from .serializers import InteractionSerializer, CommentSerializer
+
+_INTERACTION_FLAGS = ('is_liked', 'is_favorise', 'is_bookmark', 'is_exploited')
 
 
 class InteractionView(APIView):
@@ -45,14 +47,11 @@ class InteractionView(APIView):
                 {'error': 'Ressource introuvable.'},
                 status=status.HTTP_404_NOT_FOUND
             )
-        defaults = {}
-        if 'is_liked' in request.data:
-            defaults['is_liked'] = request.data['is_liked']
-        if 'is_favorise' in request.data:
-            defaults['is_favorise'] = request.data['is_favorise']
-        if 'is_bookmark' in request.data:
-            defaults['is_bookmark'] = request.data['is_bookmark']
-
+        defaults = {
+            flag: request.data[flag]
+            for flag in _INTERACTION_FLAGS
+            if flag in request.data
+        }
         interaction, created = Interaction.objects.update_or_create(
             citizen=citizen,
             resource=resource,
@@ -63,8 +62,51 @@ class InteractionView(APIView):
         return Response(serializer.data, status=http_status)
 
 
-class CommentListView(APIView):
+class InteractionFilterView(APIView):
     permission_classes = [IsAuthenticated]
+    filter_field = None
+
+    def get(self, request):
+        interactions = Interaction.objects.filter(
+            citizen__user_id=request.user.id,
+            **{self.filter_field: True}
+        )
+        serializer = InteractionSerializer(interactions, many=True)
+        return Response(serializer.data)
+
+
+class LikesListView(InteractionFilterView):
+    filter_field = 'is_liked'
+
+class FavorisListView(InteractionFilterView):
+    filter_field = 'is_favorise'
+
+class BookmarksListView(InteractionFilterView):
+    filter_field = 'is_bookmark'
+
+class ExploitedListView(InteractionFilterView):
+    filter_field = 'is_exploited'
+
+
+class InteractionSummaryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        base = Interaction.objects.filter(citizen__user_id=request.user.id)
+        return Response({
+            'likes':     base.filter(is_liked=True).count(),
+            'favoris':   base.filter(is_favorise=True).count(),
+            'bookmarks': base.filter(is_bookmark=True).count(),
+            'exploited': base.filter(is_exploited=True).count(),
+        })
+
+
+class CommentListView(APIView):
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     def get(self, request, resource_id):
         comments = Comment.objects.filter(resource__resource_id=resource_id)

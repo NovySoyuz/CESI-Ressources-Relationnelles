@@ -6,8 +6,8 @@ from resources.models import Resource
 
 class Interaction(models.Model):
     interaction_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    citizen = models.ForeignKey(Citizen, on_delete=models.CASCADE, db_column='citizen_id')
-    resource = models.ForeignKey(Resource, on_delete=models.CASCADE, db_column='resource_id')
+    citizen = models.ForeignKey(Citizen, on_delete=models.DO_NOTHING, db_column='citizen_id')
+    resource = models.ForeignKey(Resource, on_delete=models.DO_NOTHING, db_column='resource_id')
     is_liked = models.BooleanField(default=False)
     is_favorise = models.BooleanField(default=False)
     is_bookmark = models.BooleanField(default=False)
@@ -21,8 +21,8 @@ class Interaction(models.Model):
 
 class Comment(models.Model):
     comments_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    citizen = models.ForeignKey(Citizen, on_delete=models.CASCADE, db_column='citizen_id')
-    resource = models.ForeignKey(Resource, on_delete=models.CASCADE, db_column='resource_id')
+    citizen = models.ForeignKey(Citizen, on_delete=models.DO_NOTHING, db_column='citizen_id')
+    resource = models.ForeignKey(Resource, on_delete=models.DO_NOTHING, db_column='resource_id')
     comments_text = models.TextField()
     comments_created_at = models.DateTimeField(auto_now_add=True)
 
