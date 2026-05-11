@@ -22,9 +22,9 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: user_la_mode
-                  type: VARCHAR(10)
-                  defaultValue: "light"
+                  name: user_is_modo
+                  type: BOOLEAN
+                  defaultValueBoolean: false
                   constraints:
                     nullable: false
               - column:
