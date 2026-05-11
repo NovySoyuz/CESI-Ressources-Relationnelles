@@ -16,6 +16,5 @@ urlpatterns = [
     path('api/auth/', include('users.urls')),
     #path('api/interactions/', include('interactions.urls')),
     #path('api/resources/', include('resources.urls')),
-    #path('api/administration/', include('administration.urls')),
-
+    path('api/administration/', include('administration.urls')),
 ]

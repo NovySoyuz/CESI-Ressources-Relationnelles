@@ -20,7 +20,7 @@ INSTALLED_APPS = [
     'users',
     #'interactions',
     #'ressources',
-    #'administration',
+    'administration',
 ]
 
 AUTH_USER_MODEL = 'users.User'
