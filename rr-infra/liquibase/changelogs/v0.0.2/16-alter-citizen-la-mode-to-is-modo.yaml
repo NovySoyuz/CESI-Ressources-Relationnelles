@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - changeSet:
+      id: 16-alter-citizen-la-mode-to-is-modo
+      author: team-resources-relationnelles
+      comment: "Remplace user_la_mode (VARCHAR) par user_is_modo (BOOLEAN) sur la table citizen"
+      changes:
+        - dropColumn:
+            tableName: citizen
+            columnName: user_la_mode
+
+        - addColumn:
+            tableName: citizen
+            columns:
+              - column:
+                  name: user_is_modo
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false

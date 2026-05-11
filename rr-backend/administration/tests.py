@@ -1,9 +1,14 @@
 import uuid
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from django.test import TestCase
 from django.db import IntegrityError, connection
+from django.http import Http404
+from rest_framework import serializers as drf_serializers
+from rest_framework.test import APITestCase
+from rest_framework_simplejwt.exceptions import AuthenticationFailed
 from users.models import User, Citizen
 from administration.models import Admin
+from administration.serializers import AdminLoginSerializer, AdminCreateSerializer
 
 
 # ──────────────────────────────────────────────────────────────
@@ -195,4 +200,262 @@ class AdminModelIntegrationTests(TestCase):
         self.assertTrue(self.user.check_password("monmotdepasse"))
         self.assertFalse(self.user.check_password("mauvaismdp"))
 
-        
+
+# ──────────────────────────────────────────────────────────────
+# Tests des Serializers
+# ──────────────────────────────────────────────────────────────
+
+class AdminLoginSerializerTest(TestCase):
+
+    def _make_admin(self, is_super=False):
+        admin = MagicMock(spec=Admin)
+        admin.admin_is_super_admin = is_super
+        admin.save = MagicMock()
+        return admin
+
+    def _make_user(self, admin=None):
+        user = MagicMock(spec=User)
+        user.user_id   = '123e4567-e89b-12d3-a456-426614174000'
+        user.user_fname = 'Jean'
+        user.user_lname = 'Dupont'
+        user.user_mail  = 'jean@example.com'
+        user.admin_profile = admin or self._make_admin()
+        return user
+
+    def _run_validate(self, user, tokens=None):
+        tokens = tokens or {'access': 'access_tok', 'refresh': 'refresh_tok'}
+        s = AdminLoginSerializer()
+        s.user = user
+        with patch(
+            'rest_framework_simplejwt.serializers.TokenObtainPairSerializer.validate',
+            return_value=tokens,
+        ):
+            return s.validate({})
+
+    def test_tokens_saved_to_db_on_login(self):
+        admin = self._make_admin()
+        self._run_validate(self._make_user(admin))
+        admin.save.assert_called_once_with(update_fields=['admin_token', 'admin_refresh_token'])
+
+    def test_access_token_persisted(self):
+        admin = self._make_admin()
+        self._run_validate(self._make_user(admin))
+        self.assertEqual(admin.admin_token, 'access_tok')
+        self.assertEqual(admin.admin_refresh_token, 'refresh_tok')
+
+    def test_response_contains_user_profile(self):
+        admin = self._make_admin(is_super=True)
+        data = self._run_validate(self._make_user(admin))
+        self.assertIn('user', data)
+        self.assertEqual(data['user']['user_mail'], 'jean@example.com')
+        self.assertTrue(data['user']['is_super_admin'])
+
+    def test_password_not_in_response(self):
+        data = self._run_validate(self._make_user())
+        self.assertNotIn('password', data)
+        self.assertNotIn('password', data.get('user', {}))
+
+    def test_non_admin_raises_authentication_failed(self):
+        user = MagicMock(spec=User)
+        type(user).admin_profile = property(
+            lambda self: (_ for _ in ()).throw(Admin.DoesNotExist())
+        )
+        s = AdminLoginSerializer()
+        s.user = user
+        with patch(
+            'rest_framework_simplejwt.serializers.TokenObtainPairSerializer.validate',
+            return_value={'access': 'a', 'refresh': 'r'},
+        ):
+            with self.assertRaises(AuthenticationFailed):
+                s.validate({})
+
+
+class AdminCreateSerializerTest(TestCase):
+
+    def test_unknown_user_id_raises(self):
+        with patch('administration.serializers.User.objects.filter') as mock_filter:
+            mock_filter.return_value.exists.return_value = False
+            s = AdminCreateSerializer()
+            with self.assertRaises(drf_serializers.ValidationError):
+                s.validate_user_id(uuid.uuid4())
+
+    def test_already_admin_raises(self):
+        user_id = uuid.uuid4()
+        with patch('administration.serializers.User.objects.filter') as mock_user:
+            mock_user.return_value.exists.return_value = True
+            with patch('administration.serializers.Admin.objects.filter') as mock_admin:
+                mock_admin.return_value.exists.return_value = True
+                s = AdminCreateSerializer()
+                with self.assertRaises(drf_serializers.ValidationError):
+                    s.validate_user_id(user_id)
+
+    def test_valid_user_id_passes(self):
+        user_id = uuid.uuid4()
+        with patch('administration.serializers.User.objects.filter') as mock_user:
+            mock_user.return_value.exists.return_value = True
+            with patch('administration.serializers.Admin.objects.filter') as mock_admin:
+                mock_admin.return_value.exists.return_value = False
+                s = AdminCreateSerializer()
+                self.assertEqual(s.validate_user_id(user_id), user_id)
+
+
+# ──────────────────────────────────────────────────────────────
+# Tests des Views (API)
+# ──────────────────────────────────────────────────────────────
+
+def _mock_auth_user():
+    user = MagicMock(spec=User)
+    user.is_authenticated = True
+    return user
+
+
+class AdminLoginViewTest(APITestCase):
+    url = '/api/administration/login/'
+
+    def test_valid_login_returns_200_with_tokens(self):
+        with patch('administration.views.AdminLoginSerializer') as MockSerializer:
+            instance = MockSerializer.return_value
+            instance.is_valid.return_value = None
+            instance.validated_data = {
+                'access': 'tok', 'refresh': 'ref',
+                'user': {'user_id': 'xxx', 'user_fname': 'Jean',
+                         'user_lname': 'Dupont', 'user_mail': 'j@j.com',
+                         'is_super_admin': False},
+            }
+            r = self.client.post(self.url, {'user_mail': 'j@j.com', 'password': 'pass'}, format='json')
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('access', r.data)
+
+    def test_invalid_credentials_returns_401(self):
+        with patch('administration.views.AdminLoginSerializer') as MockSerializer:
+            instance = MockSerializer.return_value
+            instance.is_valid.side_effect = Exception('bad credentials')
+            r = self.client.post(self.url, {'user_mail': 'x@x.com', 'password': 'wrong'}, format='json')
+        self.assertEqual(r.status_code, 401)
+        self.assertIn('detail', r.data)
+
+
+class AdminLogoutViewTest(APITestCase):
+    url = '/api/administration/logout/'
+
+    def test_unauthenticated_returns_401(self):
+        r = self.client.post(self.url, {}, format='json')
+        self.assertEqual(r.status_code, 401)
+
+    def test_logout_returns_204(self):
+        user = _mock_auth_user()
+        user.admin_profile = MagicMock()
+        user.admin_profile.invalidate_tokens = MagicMock()
+        self.client.force_authenticate(user=user)
+        r = self.client.post(self.url, {}, format='json')
+        self.assertEqual(r.status_code, 204)
+
+    def test_logout_invalidates_tokens(self):
+        user = _mock_auth_user()
+        user.admin_profile = MagicMock()
+        user.admin_profile.invalidate_tokens = MagicMock()
+        self.client.force_authenticate(user=user)
+        self.client.post(self.url, {}, format='json')
+        user.admin_profile.invalidate_tokens.assert_called_once()
+
+
+class AdminListCreateViewTest(APITestCase):
+    url = '/api/administration/admins/'
+
+    def test_list_unauthenticated_returns_401(self):
+        r = self.client.get(self.url)
+        self.assertEqual(r.status_code, 401)
+
+    def test_list_authenticated_returns_200(self):
+        self.client.force_authenticate(user=_mock_auth_user())
+        with patch('administration.views.Admin.objects.select_related') as mock_qs:
+            mock_qs.return_value.all.return_value = []
+            with patch('administration.views.AdminListSerializer') as MockSerializer:
+                MockSerializer.return_value.data = []
+                r = self.client.get(self.url)
+        self.assertEqual(r.status_code, 200)
+
+    def test_create_valid_admin_returns_201(self):
+        self.client.force_authenticate(user=_mock_auth_user())
+        mock_admin = MagicMock(spec=Admin)
+        with patch('administration.views.AdminCreateSerializer') as MockCreate:
+            instance = MockCreate.return_value
+            instance.is_valid.return_value = True
+            instance.save.return_value = mock_admin
+            with patch('administration.views.AdminDetailSerializer') as MockDetail:
+                MockDetail.return_value.data = {'admin_id': str(uuid.uuid4())}
+                r = self.client.post(self.url, {'user_id': str(uuid.uuid4())}, format='json')
+        self.assertEqual(r.status_code, 201)
+
+    def test_create_invalid_returns_400(self):
+        self.client.force_authenticate(user=_mock_auth_user())
+        with patch('administration.views.AdminCreateSerializer') as MockCreate:
+            instance = MockCreate.return_value
+            instance.is_valid.return_value = False
+            instance.errors = {'user_id': ['Aucun utilisateur trouvé.']}
+            r = self.client.post(self.url, {'user_id': 'invalid'}, format='json')
+        self.assertEqual(r.status_code, 400)
+
+
+class AdminDetailViewTest(APITestCase):
+
+    def _url(self, admin_id=None):
+        return f'/api/administration/admins/{admin_id or uuid.uuid4()}/'
+
+    def test_get_unauthenticated_returns_401(self):
+        r = self.client.get(self._url())
+        self.assertEqual(r.status_code, 401)
+
+    def test_get_returns_200(self):
+        self.client.force_authenticate(user=_mock_auth_user())
+        mock_admin = MagicMock(spec=Admin)
+        with patch('administration.views.get_object_or_404', return_value=mock_admin):
+            with patch('administration.views.AdminDetailSerializer') as MockSerializer:
+                MockSerializer.return_value.data = {'admin_id': str(uuid.uuid4())}
+                r = self.client.get(self._url())
+        self.assertEqual(r.status_code, 200)
+
+    def test_get_not_found_returns_404(self):
+
+        self.client.force_authenticate(user=_mock_auth_user())
+        with patch('administration.views.get_object_or_404', side_effect=Http404):
+            r = self.client.get(self._url())
+        self.assertEqual(r.status_code, 404)
+
+    def test_patch_valid_returns_200(self):
+        self.client.force_authenticate(user=_mock_auth_user())
+        mock_admin = MagicMock(spec=Admin)
+        with patch('administration.views.get_object_or_404', return_value=mock_admin):
+            with patch('administration.views.AdminUpdateSerializer') as MockUpdate:
+                instance = MockUpdate.return_value
+                instance.is_valid.return_value = True
+                with patch('administration.views.AdminDetailSerializer') as MockDetail:
+                    MockDetail.return_value.data = {'admin_id': str(uuid.uuid4())}
+                    r = self.client.patch(self._url(), {'admin_is_super_admin': True}, format='json')
+        self.assertEqual(r.status_code, 200)
+
+    def test_patch_invalid_returns_400(self):
+        self.client.force_authenticate(user=_mock_auth_user())
+        mock_admin = MagicMock(spec=Admin)
+        with patch('administration.views.get_object_or_404', return_value=mock_admin):
+            with patch('administration.views.AdminUpdateSerializer') as MockUpdate:
+                instance = MockUpdate.return_value
+                instance.is_valid.return_value = False
+                instance.errors = {'admin_is_super_admin': ['Champ invalide.']}
+                r = self.client.patch(self._url(), {'admin_is_super_admin': 'pas_un_bool'}, format='json')
+        self.assertEqual(r.status_code, 400)
+
+    def test_delete_returns_204(self):
+        self.client.force_authenticate(user=_mock_auth_user())
+        mock_admin = MagicMock(spec=Admin)
+        with patch('administration.views.get_object_or_404', return_value=mock_admin):
+            r = self.client.delete(self._url())
+        self.assertEqual(r.status_code, 204)
+        mock_admin.delete.assert_called_once()
+
+    def test_delete_not_found_returns_404(self):
+
+        self.client.force_authenticate(user=_mock_auth_user())
+        with patch('administration.views.get_object_or_404', side_effect=Http404):
+            r = self.client.delete(self._url())
+        self.assertEqual(r.status_code, 404)

@@ -1,10 +1,10 @@
 import uuid
 from django.test import TestCase
-from django.contrib.auth.models import User
 from rest_framework.test import APIClient
 from rest_framework import status
 from unittest.mock import patch, MagicMock
 from .models import Interaction, Comment, Citizen, Resource
+from users.models import User
 
 
 class InteractionViewTests(TestCase):
@@ -13,16 +13,9 @@ class InteractionViewTests(TestCase):
     """
 
     def setUp(self):
-        """
-        setUp() est exécutée avant CHAQUE test.
-        On crée un utilisateur Django + un client HTTP simulé.
-        """
         self.client = APIClient()
-        # Crée un utilisateur Django pour simuler l'authentification
-        self.user = User.objects.create_user(
-            username='testuser',
-            password='testpass123'
-        )
+        self.user = MagicMock(spec=User)
+        self.user.id = uuid.uuid4()
         self.resource_id = uuid.uuid4()
 
     def test_get_interaction_sans_authentification(self):
@@ -107,18 +100,18 @@ class CommentListViewTests(TestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.user = User.objects.create_user(
-            username='testuser2',
-            password='testpass123'
-        )
+        self.user = MagicMock(spec=User)
+        self.user.id = uuid.uuid4()
         self.resource_id = uuid.uuid4()
 
     def test_get_commentaires_sans_authentification(self):
         """
-        Sans token JWT → doit retourner 401
+        GET commentaires est public → doit retourner 200
         """
-        response = self.client.get(f'/api/interactions/comments/{self.resource_id}/')
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        with patch('interactions.views.Comment.objects.filter') as mock_filter:
+            mock_filter.return_value = []
+            response = self.client.get(f'/api/interactions/comments/{self.resource_id}/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_post_commentaire_sans_text(self):
         """
@@ -157,10 +150,8 @@ class CommentDetailViewTests(TestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.user = User.objects.create_user(
-            username='testuser3',
-            password='testpass123'
-        )
+        self.user = MagicMock(spec=User)
+        self.user.id = uuid.uuid4()
         self.resource_id = uuid.uuid4()
         self.comment_id = uuid.uuid4()
 
