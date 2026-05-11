@@ -1,0 +1,29 @@
+databaseChangeLog:
+  - changeSet:
+      id: 14-add-interaction-id
+      author: team-resources-relationnelles
+      comment: "Ajout d'une PK surrogate interaction_id sur interactions (remplace la PK composite)"
+      changes:
+        - dropPrimaryKey:
+            tableName: interactions
+            constraintName: pk_interactions
+
+        - addColumn:
+            tableName: interactions
+            columns:
+              - column:
+                  name: interaction_id
+                  type: UUID
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    nullable: false
+
+        - addPrimaryKey:
+            tableName: interactions
+            columnNames: interaction_id
+            constraintName: pk_interactions
+
+        - addUniqueConstraint:
+            tableName: interactions
+            columnNames: citizen_id, resource_id
+            constraintName: uq_inter_citizen_resource
