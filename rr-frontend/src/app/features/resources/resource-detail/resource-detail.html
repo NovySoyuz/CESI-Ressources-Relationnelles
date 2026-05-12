@@ -1,0 +1,253 @@
+<div class="fr-container fr-py-6w">
+
+  <!-- Chargement -->
+  @if (loading()) {
+    <p class="fr-text--lead">Chargement en cours…</p>
+  }
+
+  <!-- Erreur -->
+  @if (error()) {
+    <div class="fr-alert fr-alert--error fr-mb-4w">
+      <p class="fr-alert__title">Ressource introuvable</p>
+      <p>{{ error() }}</p>
+    </div>
+    <a routerLink="/resources" class="fr-btn fr-btn--secondary fr-icon-arrow-left-line fr-btn--icon-left">
+      Retour aux ressources
+    </a>
+  }
+
+  @if (!loading() && !error() && resource(); as r) {
+
+    <!-- Fil d'Ariane -->
+    <nav role="navigation" class="fr-breadcrumb fr-mb-4w" aria-label="vous êtes ici :">
+      <button class="fr-breadcrumb__button" aria-expanded="false" aria-controls="breadcrumb-detail">
+        Voir le fil d'Ariane
+      </button>
+      <div class="fr-collapse" id="breadcrumb-detail">
+        <ol class="fr-breadcrumb__list">
+          <li><a class="fr-breadcrumb__link" routerLink="/">Accueil</a></li>
+          <li><a class="fr-breadcrumb__link" routerLink="/resources">Ressources</a></li>
+          <li><a class="fr-breadcrumb__link" aria-current="page">{{ r.resource_title }}</a></li>
+        </ol>
+      </div>
+    </nav>
+
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-lg-8">
+
+        <!-- En-tête de la ressource -->
+        <div class="fr-mb-3w">
+          <div class="rr-status-badges">
+            @if (r.resource_label) {
+              <p class="fr-badge fr-badge--blue-ecume fr-badge--no-icon">
+                {{ labelDisplay[r.resource_label] }}
+              </p>
+            }
+            @if (!r.resource_is_visible) {
+              <p class="fr-badge fr-badge--warning fr-badge--no-icon">En attente de validation</p>
+            }
+          </div>
+          <h1 class="fr-h2">{{ r.resource_title }}</h1>
+          <p class="fr-text--sm fr-text--mention">
+            Par <strong>{{ r.resource_author.user_fname }} {{ r.resource_author.user_lname }}</strong>
+            &middot; {{ r.resource_created_at | date:'dd MMMM yyyy':'':'fr' }}
+            @if (r.resource_last_modif !== r.resource_created_at) {
+              &middot; modifié le {{ r.resource_last_modif | date:'dd/MM/yyyy' }}
+            }
+          </p>
+        </div>
+
+        <!-- Catégories -->
+        @if (r.categories.length > 0) {
+          <ul class="fr-tags-group fr-mb-3w">
+            @for (cat of r.categories; track cat.category_id) {
+              <li><p class="fr-tag">{{ cat.label }}</p></li>
+            }
+          </ul>
+        }
+
+        <!-- Relations -->
+        @if (r.relations.length > 0) {
+          <ul class="fr-tags-group fr-mb-3w">
+            @for (rel of r.relations; track rel.relation_id) {
+              <li><p class="fr-tag fr-icon-arrow-right-line fr-tag--icon-left">{{ rel.label }}</p></li>
+            }
+          </ul>
+        }
+
+        <hr class="fr-hr fr-mb-4w">
+
+        <!-- Description -->
+        @if (r.resource_description) {
+          <p class="fr-text fr-mb-4w" class="rr-pre-line">{{ r.resource_description }}</p>
+        }
+
+        <!-- ── Sections sous-type ──────────────────────── -->
+
+        @switch (r.resource_label) {
+
+          @case ('reading_sheet') {
+            @if (r.reading_sheet; as s) {
+              <div class="fr-callout fr-mb-4w">
+                <h2 class="fr-callout__title">Fiche de lecture</h2>
+                <p class="fr-callout__text">
+                  <strong>Livre&nbsp;:</strong> {{ s.book_title }}<br>
+                  @if (s.book_author) { <strong>Auteur&nbsp;:</strong> {{ s.book_author }}<br> }
+                </p>
+                @if (s.summary) {
+                  <p class="fr-callout__text" class="rr-pre-line">{{ s.summary }}</p>
+                }
+              </div>
+            }
+          }
+
+          @case ('games') {
+            @if (r.games; as g) {
+              <div class="fr-callout fr-mb-4w">
+                <h2 class="fr-callout__title">Jeu</h2>
+                <div class="fr-callout__text">
+                  @if (g.game_platform) { <p><strong>Plateforme&nbsp;:</strong> {{ g.game_platform }}</p> }
+                  @if (g.game_instructions) { <p style="white-space:pre-line;">{{ g.game_instructions }}</p> }
+                  @if (g.game_url) {
+                    <a [href]="g.game_url" target="_blank" rel="noopener noreferrer"
+                       class="fr-link fr-icon-external-link-line fr-link--icon-right">
+                      Accéder au jeu
+                    </a>
+                  }
+                </div>
+              </div>
+            }
+          }
+
+          @case ('videos') {
+            @if (r.videos; as v) {
+              <div class="fr-callout fr-mb-4w">
+                <h2 class="fr-callout__title">Vidéo</h2>
+                <div class="fr-callout__text">
+                  @if (v.video_platform) { <p><strong>Plateforme&nbsp;:</strong> {{ v.video_platform }}</p> }
+                  @if (v.video_duration) { <p><strong>Durée&nbsp;:</strong> {{ v.video_duration }} min</p> }
+                  <a [href]="v.video_url" target="_blank" rel="noopener noreferrer"
+                     class="fr-link fr-icon-external-link-line fr-link--icon-right">
+                    Voir la vidéo
+                  </a>
+                </div>
+              </div>
+            }
+          }
+
+          @case ('pdf') {
+            @if (r.pdf; as p) {
+              <div class="fr-callout fr-mb-4w">
+                <h2 class="fr-callout__title">Document PDF</h2>
+                <div class="fr-callout__text">
+                  @if (p.pdf_publisher) { <p><strong>Éditeur&nbsp;:</strong> {{ p.pdf_publisher }}</p> }
+                  @if (p.pdf_page_count) { <p><strong>Pages&nbsp;:</strong> {{ p.pdf_page_count }}</p> }
+                  <a [href]="p.pdf_url" target="_blank" rel="noopener noreferrer"
+                     class="fr-link fr-icon-file-pdf-line fr-link--icon-left">
+                    Télécharger le PDF
+                  </a>
+                </div>
+              </div>
+            }
+          }
+
+          @case ('activity') {
+            @if (r.activity; as a) {
+              <div class="fr-callout fr-mb-4w">
+                <h2 class="fr-callout__title">Activité</h2>
+                <div class="fr-callout__text">
+                  @if (a.activity_duration) { <p><strong>Durée&nbsp;:</strong> {{ a.activity_duration }} min</p> }
+                  @if (a.activity_required_materials) {
+                    <p><strong>Matériel nécessaire&nbsp;:</strong></p>
+                    <p style="white-space:pre-line;">{{ a.activity_required_materials }}</p>
+                  }
+                  @if (a.activity_instructions) {
+                    <p><strong>Instructions&nbsp;:</strong></p>
+                    <p style="white-space:pre-line;">{{ a.activity_instructions }}</p>
+                  }
+                </div>
+              </div>
+            }
+          }
+
+          @case ('article') {
+            @if (r.article; as a) {
+              <div class="fr-callout fr-mb-4w">
+                <h2 class="fr-callout__title">Article</h2>
+                <div class="fr-callout__text">
+                  @if (a.article_publisher) { <p><strong>Source&nbsp;:</strong> {{ a.article_publisher }}</p> }
+                  <a [href]="a.article_url" target="_blank" rel="noopener noreferrer"
+                     class="fr-link fr-icon-external-link-line fr-link--icon-right">
+                    Lire l'article
+                  </a>
+                </div>
+              </div>
+            }
+          }
+
+          @case ('challenge_card') {
+            @if (r.challenge_card; as c) {
+              <div class="fr-callout fr-mb-4w">
+                <h2 class="fr-callout__title">Carte défi</h2>
+                <div class="fr-callout__text">
+                  @if (c.challenge_card_duration) {
+                    <p><strong>Durée du défi&nbsp;:</strong> {{ c.challenge_card_duration }} jour(s)</p>
+                  }
+                </div>
+              </div>
+            }
+          }
+
+          @case ('exercise') {
+            @if (r.exercise; as e) {
+              <div class="fr-callout fr-mb-4w">
+                <h2 class="fr-callout__title">Exercice</h2>
+                <div class="fr-callout__text">
+                  @if (e.exercise_duration) { <p><strong>Durée&nbsp;:</strong> {{ e.exercise_duration }} min</p> }
+                  @if (e.exercise_instructions) {
+                    <p style="white-space:pre-line;">{{ e.exercise_instructions }}</p>
+                  }
+                </div>
+              </div>
+            }
+          }
+
+        }
+
+        <!-- Zone interactions (Partie 3) -->
+        <div class="rr-placeholder fr-mb-4w">
+          Boutons d'interaction (like, favori, bookmark, exploité) — Partie 3
+        </div>
+
+        <!-- Actions auteur -->
+        @if (isAuthor()) {
+          <div class="fr-btns-group fr-btns-group--inline fr-mb-4w">
+            @if (!r.resource_is_visible) {
+              <button class="fr-btn fr-btn--icon-left fr-icon-upload-line" (click)="publish()">
+                Soumettre à validation
+              </button>
+            }
+            <a [routerLink]="['/resources', r.resource_id, 'edit']"
+               class="fr-btn fr-btn--secondary fr-btn--icon-left fr-icon-edit-line">
+              Modifier
+            </a>
+            <button class="fr-btn fr-btn--tertiary fr-btn--icon-left fr-icon-delete-line" (click)="delete()">
+              Supprimer
+            </button>
+          </div>
+        }
+
+      </div>
+
+      <!-- Colonne latérale -->
+      <div class="fr-col-12 fr-col-lg-4">
+        <div class="rr-placeholder fr-mb-3w">
+          Commentaires — Partie 3
+        </div>
+      </div>
+
+    </div>
+
+  }
+
+</div>

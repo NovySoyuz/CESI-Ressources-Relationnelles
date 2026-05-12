@@ -1,0 +1,47 @@
+<div class="fr-mb-4w">
+  <div class="fr-grid-row fr-grid-row--gutters">
+
+    <div class="fr-col-12 fr-col-sm-4">
+      <div class="fr-select-group">
+        <label class="fr-label" for="filter-category">Catégorie</label>
+        <select class="fr-select" id="filter-category" [(ngModel)]="filters.category" (change)="emit()">
+          <option value="">Toutes les catégories</option>
+          @for (c of categories(); track c.category_id) {
+            <option [value]="c.category_id">{{ c.label }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="fr-col-12 fr-col-sm-4">
+      <div class="fr-select-group">
+        <label class="fr-label" for="filter-label">Type de ressource</label>
+        <select class="fr-select" id="filter-label" [(ngModel)]="filters.label" (change)="emit()">
+          <option value="">Tous les types</option>
+          @for (opt of labelOptions; track opt[0]) {
+            <option [value]="opt[0]">{{ opt[1] }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="fr-col-12 fr-col-sm-4">
+      <div class="fr-select-group">
+        <label class="fr-label" for="filter-relation">Type de relation</label>
+        <select class="fr-select" id="filter-relation" [(ngModel)]="filters.relation" (change)="emit()">
+          <option value="">Toutes les relations</option>
+          @for (r of relations(); track r.relation_id) {
+            <option [value]="r.relation_id">{{ r.label }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+  </div>
+
+  <button
+    class="fr-btn fr-btn--tertiary-no-outline fr-btn--sm fr-icon-close-circle-line fr-btn--icon-left fr-mt-1w"
+    (click)="reset()"
+  >Réinitialiser les filtres</button>
+
+</div>

@@ -1,0 +1,80 @@
+<div class="fr-container fr-py-6w">
+  <div class="fr-grid-row fr-grid-row--center">
+    <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+
+      <h1 class="fr-h3 fr-mb-4w">Créer un compte</h1>
+
+      @if (error()) {
+        <div class="fr-alert fr-alert--error fr-mb-3w">
+          <p>{{ error() }}</p>
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()">
+
+        <div class="fr-grid-row fr-grid-row--gutters">
+          <div class="fr-col-6">
+            <div class="fr-input-group">
+              <label class="fr-label" for="user-fname">Prénom</label>
+              <input class="fr-input" formControlName="user_fname" type="text" id="user-fname" autocomplete="given-name">
+            </div>
+          </div>
+          <div class="fr-col-6">
+            <div class="fr-input-group">
+              <label class="fr-label" for="user-lname">Nom</label>
+              <input class="fr-input" formControlName="user_lname" type="text" id="user-lname" autocomplete="family-name">
+            </div>
+          </div>
+        </div>
+
+        <div class="fr-input-group fr-mt-3w"
+             [class.fr-input-group--error]="form.get('user_mail')?.invalid && form.get('user_mail')?.touched">
+          <label class="fr-label" for="reg-mail">Adresse e-mail</label>
+          <input
+            class="fr-input"
+            [class.fr-input--error]="form.get('user_mail')?.invalid && form.get('user_mail')?.touched"
+            formControlName="user_mail"
+            type="email"
+            id="reg-mail"
+            autocomplete="email"
+          >
+          @if (form.get('user_mail')?.invalid && form.get('user_mail')?.touched) {
+            <p class="fr-error-text">Adresse e-mail invalide.</p>
+          }
+        </div>
+
+        <div class="fr-input-group fr-mt-3w"
+             [class.fr-input-group--error]="form.get('password')?.invalid && form.get('password')?.touched">
+          <label class="fr-label" for="reg-password">
+            Mot de passe
+            <span class="fr-hint-text">8 caractères minimum</span>
+          </label>
+          <input
+            class="fr-input"
+            [class.fr-input--error]="form.get('password')?.invalid && form.get('password')?.touched"
+            formControlName="password"
+            type="password"
+            id="reg-password"
+            autocomplete="new-password"
+          >
+          @if (form.get('password')?.errors?.['minlength'] && form.get('password')?.touched) {
+            <p class="fr-error-text">Le mot de passe doit contenir au moins 8 caractères.</p>
+          }
+        </div>
+
+        <div class="fr-btns-group fr-mt-4w">
+          <button type="submit" class="fr-btn" [disabled]="loading() || form.invalid">
+            {{ loading() ? 'Création…' : 'Créer le compte' }}
+          </button>
+        </div>
+
+      </form>
+
+      <p class="fr-text--sm fr-mt-3w">
+        Déjà inscrit ?
+        <a routerLink="/login" class="fr-link">Se connecter</a>
+      </p>
+
+    </div>
+  </div>
+</div>

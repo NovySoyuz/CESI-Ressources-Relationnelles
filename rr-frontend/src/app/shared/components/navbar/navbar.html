@@ -1,0 +1,150 @@
+<header role="banner" class="fr-header">
+
+  <div class="fr-header__body">
+    <div class="fr-container">
+      <div class="fr-header__body-row">
+
+        <!-- ── Marque + service ──────────────────────────── -->
+        <div class="fr-header__brand fr-enlarge-link">
+          <div class="fr-header__brand-top">
+            <div class="fr-header__logo">
+              <p class="fr-logo">République<br>Française</p>
+            </div>
+            <div class="fr-header__navbar">
+              <button
+                class="fr-btn--menu fr-btn"
+                data-fr-opened="false"
+                aria-controls="header-nav-modal"
+                aria-haspopup="menu"
+                id="header-menu-btn"
+                title="Menu"
+              >Menu</button>
+            </div>
+          </div>
+          <div class="fr-header__service">
+            <a routerLink="/" title="Retour à l'accueil — (RE)Sources Relationnelles">
+              <p class="fr-header__service-title">(RE)Sources Relationnelles</p>
+            </a>
+            <p class="fr-header__service-tagline">Bien-être et liens relationnels</p>
+          </div>
+        </div>
+
+        <!-- ── Outils (desktop) ──────────────────────────── -->
+        <div class="fr-header__tools">
+          <div class="fr-header__tools-links">
+            @if (!auth.isLogged()) {
+              <ul class="fr-links-group">
+                <li>
+                  <a class="fr-btn fr-icon-account-line fr-btn--icon-left" routerLink="/login">
+                    Se connecter
+                  </a>
+                </li>
+                <li>
+                  <a class="fr-btn fr-btn--secondary fr-icon-account-line fr-btn--icon-left" routerLink="/register">
+                    S'inscrire
+                  </a>
+                </li>
+              </ul>
+            } @else {
+              <ul class="fr-links-group">
+                <li>
+                  <a class="fr-btn fr-icon-add-line fr-btn--icon-left" routerLink="/resources/new">
+                    Créer
+                  </a>
+                </li>
+                <li>
+                  <button
+                    class="fr-btn fr-btn--tertiary fr-icon-logout-box-r-line fr-btn--icon-left"
+                    (click)="logout()"
+                  >Déconnexion</button>
+                </li>
+              </ul>
+            }
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Menu modal (desktop nav + tiroir mobile) ──────── -->
+  <div class="fr-header__menu fr-modal" id="header-nav-modal" aria-labelledby="header-menu-btn">
+    <div class="fr-container">
+      <button class="fr-link--close fr-link" aria-controls="header-nav-modal">Fermer</button>
+
+      <!-- Liens rapides (visibles uniquement dans le tiroir mobile) -->
+      <div class="fr-header__menu-links">
+        @if (!auth.isLogged()) {
+          <ul class="fr-links-group">
+            <li>
+              <a class="fr-link fr-icon-account-line fr-link--icon-left" routerLink="/login">
+                Se connecter
+              </a>
+            </li>
+            <li>
+              <a class="fr-link fr-icon-account-line fr-link--icon-left" routerLink="/register">
+                S'inscrire
+              </a>
+            </li>
+          </ul>
+        } @else {
+          <ul class="fr-links-group">
+            <li>
+              <span class="fr-link fr-icon-account-circle-line fr-link--icon-left">
+                {{ fullName() }}
+              </span>
+            </li>
+            <li>
+              <button class="fr-link fr-icon-logout-box-r-line fr-link--icon-left" (click)="logout()">
+                Déconnexion
+              </button>
+            </li>
+          </ul>
+        }
+      </div>
+
+      <!-- Navigation principale -->
+      <nav class="fr-nav" id="main-navigation" role="navigation" aria-label="Menu principal">
+        <ul class="fr-nav__list">
+
+          <li class="fr-nav__item">
+            <a
+              class="fr-nav__link"
+              routerLink="/resources"
+              routerLinkActive
+              #rlaResources="routerLinkActive"
+              [routerLinkActiveOptions]="{ exact: true }"
+              [attr.aria-current]="rlaResources.isActive ? 'page' : null"
+            >Ressources</a>
+          </li>
+
+          @if (auth.isLogged()) {
+            <li class="fr-nav__item">
+              <a
+                class="fr-nav__link"
+                routerLink="/resources/mine"
+                routerLinkActive
+                #rlaMine="routerLinkActive"
+                [attr.aria-current]="rlaMine.isActive ? 'page' : null"
+              >Mes ressources</a>
+            </li>
+          }
+
+          @if (auth.isModo()) {
+            <li class="fr-nav__item">
+              <a
+                class="fr-nav__link"
+                routerLink="/moderation"
+                routerLinkActive
+                #rlaModo="routerLinkActive"
+                [attr.aria-current]="rlaModo.isActive ? 'page' : null"
+              >Modération</a>
+            </li>
+          }
+
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+</header>

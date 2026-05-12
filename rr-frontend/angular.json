@@ -27,9 +27,31 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**",
+                "input": "node_modules/@gouvfr/dsfr/dist/fonts",
+                "output": "/fonts"
+              },
+              {
+                "glob": "**",
+                "input": "node_modules/@gouvfr/dsfr/dist/icons",
+                "output": "/icons"
+              },
+              {
+                "glob": "**",
+                "input": "node_modules/@gouvfr/dsfr/dist/artwork",
+                "output": "/artwork"
+              },
+              {
+                "glob": "**",
+                "input": "node_modules/@gouvfr/dsfr/dist/favicon",
+                "output": "/favicon"
               }
             ],
             "styles": [
+              "node_modules/@gouvfr/dsfr/dist/dsfr.min.css",
+              "node_modules/@gouvfr/dsfr/dist/utility/utility.min.css",
               "src/styles.scss"
             ]
           },
@@ -38,8 +60,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "1MB",
+                  "maximumError": "2MB"
                 },
                 {
                   "type": "anyComponentStyle",

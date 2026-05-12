@@ -1,0 +1,48 @@
+<div class="fr-card fr-card--shadow fr-enlarge-link">
+
+  <div class="fr-card__header">
+    @if (resource().resource_label) {
+      <ul class="fr-badges-group">
+        <li>
+          <p class="fr-badge fr-badge--blue-ecume fr-badge--no-icon">
+            {{ labelDisplay[resource().resource_label!] }}
+          </p>
+        </li>
+      </ul>
+    }
+  </div>
+
+  <div class="fr-card__body">
+    <div class="fr-card__content">
+
+      <h3 class="fr-card__title">
+        <a [routerLink]="['/resources', resource().resource_id]">
+          {{ resource().resource_title }}
+        </a>
+      </h3>
+
+      @if (resource().resource_description) {
+        <p class="fr-card__desc">{{ resource().resource_description }}</p>
+      }
+
+      @if (resource().categories.length > 0) {
+        <div class="fr-card__start">
+          <ul class="fr-tags-group">
+            @for (cat of resource().categories; track cat.category_id) {
+              <li><p class="fr-tag fr-tag--sm">{{ cat.label }}</p></li>
+            }
+          </ul>
+        </div>
+      }
+
+      <div class="fr-card__end">
+        <p class="fr-card__detail fr-icon-user-line">
+          {{ resource().resource_author.user_fname }} {{ resource().resource_author.user_lname }}
+          &middot; {{ resource().resource_created_at | date:'dd/MM/yyyy' }}
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+</div>

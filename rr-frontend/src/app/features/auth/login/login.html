@@ -1,0 +1,59 @@
+<div class="fr-container fr-py-6w">
+  <div class="fr-grid-row fr-grid-row--center">
+    <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+
+      <h1 class="fr-h3 fr-mb-4w">Connexion</h1>
+
+      @if (error()) {
+        <div class="fr-alert fr-alert--error fr-mb-3w">
+          <p>{{ error() }}</p>
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()">
+
+        <div class="fr-input-group"
+             [class.fr-input-group--error]="form.get('user_mail')?.invalid && form.get('user_mail')?.touched">
+          <label class="fr-label" for="user-mail">Adresse e-mail</label>
+          <input
+            class="fr-input"
+            [class.fr-input--error]="form.get('user_mail')?.invalid && form.get('user_mail')?.touched"
+            formControlName="user_mail"
+            type="email"
+            id="user-mail"
+            autocomplete="email"
+          >
+          @if (form.get('user_mail')?.invalid && form.get('user_mail')?.touched) {
+            <p class="fr-error-text">Adresse e-mail invalide.</p>
+          }
+        </div>
+
+        <div class="fr-input-group fr-mt-3w"
+             [class.fr-input-group--error]="form.get('password')?.invalid && form.get('password')?.touched">
+          <label class="fr-label" for="password">Mot de passe</label>
+          <input
+            class="fr-input"
+            [class.fr-input--error]="form.get('password')?.invalid && form.get('password')?.touched"
+            formControlName="password"
+            type="password"
+            id="password"
+            autocomplete="current-password"
+          >
+        </div>
+
+        <div class="fr-btns-group fr-mt-4w">
+          <button type="submit" class="fr-btn" [disabled]="loading() || form.invalid">
+            {{ loading() ? 'Connexion…' : 'Se connecter' }}
+          </button>
+        </div>
+
+      </form>
+
+      <p class="fr-text--sm fr-mt-3w">
+        Pas encore de compte ?
+        <a routerLink="/register" class="fr-link">S'inscrire</a>
+      </p>
+
+    </div>
+  </div>
+</div>
