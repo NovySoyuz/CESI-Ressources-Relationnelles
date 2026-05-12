@@ -4,62 +4,83 @@
     <div class="fr-container">
       <div class="fr-header__body-row">
 
-        <!-- ── Marque + service ──────────────────────────── -->
+        <!-- Bloc marque + service -->
         <div class="fr-header__brand fr-enlarge-link">
           <div class="fr-header__brand-top">
             <div class="fr-header__logo">
               <p class="fr-logo">République<br>Française</p>
             </div>
-            <div class="fr-header__navbar">
-              <button
-                class="fr-btn--menu fr-btn"
-                data-fr-opened="false"
-                aria-controls="header-nav-modal"
-                aria-haspopup="menu"
-                id="header-menu-btn"
-                title="Menu"
-              >Menu</button>
-            </div>
           </div>
           <div class="fr-header__service">
-            <a routerLink="/" title="Retour à l'accueil — (RE)Sources Relationnelles">
+            <a routerLink="/" title="Accueil — (RE)Sources Relationnelles">
               <p class="fr-header__service-title">(RE)Sources Relationnelles</p>
             </a>
-            <p class="fr-header__service-tagline">Bien-être et liens relationnels</p>
+            <p class="fr-header__service-tagline">
+              Plateforme nationale de ressources pour renforcer les liens entre citoyens
+            </p>
           </div>
         </div>
 
-        <!-- ── Outils (desktop) ──────────────────────────── -->
+        <!-- Outils -->
         <div class="fr-header__tools">
           <div class="fr-header__tools-links">
             @if (!auth.isLogged()) {
-              <ul class="fr-links-group">
+              <ul class="fr-btns-group">
                 <li>
-                  <a class="fr-btn fr-icon-account-line fr-btn--icon-left" routerLink="/login">
-                    Se connecter
+                  <a class="fr-btn fr-btn--secondary fr-btn--icon-left fr-icon-lock-line"
+                     routerLink="/login">
+                    Connexion
                   </a>
                 </li>
                 <li>
-                  <a class="fr-btn fr-btn--secondary fr-icon-account-line fr-btn--icon-left" routerLink="/register">
-                    S'inscrire
+                  <a class="fr-btn fr-btn--icon-left fr-icon-account-circle-line"
+                     routerLink="/register">
+                    Créer un compte
                   </a>
                 </li>
               </ul>
             } @else {
-              <ul class="fr-links-group">
+              <ul class="fr-btns-group">
                 <li>
-                  <a class="fr-btn fr-icon-add-line fr-btn--icon-left" routerLink="/resources/new">
-                    Créer
+                  <a class="fr-btn fr-btn--icon-left fr-icon-add-circle-line"
+                     routerLink="/resources/new">
+                    Créer une ressource
+                  </a>
+                </li>
+                @if (auth.isModo()) {
+                  <li>
+                    <a class="fr-btn fr-btn--secondary fr-btn--icon-left fr-icon-shield-line"
+                       routerLink="/moderation">
+                      Modération
+                    </a>
+                  </li>
+                }
+                <li>
+                  <a class="fr-btn fr-btn--secondary fr-btn--icon-left fr-icon-account-circle-line"
+                     routerLink="/profile">
+                    {{ fullName() }}
                   </a>
                 </li>
                 <li>
-                  <button
-                    class="fr-btn fr-btn--tertiary fr-icon-logout-box-r-line fr-btn--icon-left"
-                    (click)="logout()"
-                  >Déconnexion</button>
+                  <button class="fr-btn fr-btn--tertiary-no-outline fr-btn--icon-left fr-icon-logout-box-r-line"
+                          (click)="logout()">
+                    Déconnexion
+                  </button>
                 </li>
               </ul>
             }
+          </div>
+
+          <!-- Bouton menu mobile -->
+          <div class="fr-header__navbar">
+            <button class="fr-btn--menu fr-btn"
+                    data-fr-opened="false"
+                    aria-controls="header-nav-modal"
+                    aria-haspopup="menu"
+                    title="Menu"
+                    id="header-nav-btn">
+              Menu
+            </button>
           </div>
         </div>
 
@@ -67,77 +88,74 @@
     </div>
   </div>
 
-  <!-- ── Menu modal (desktop nav + tiroir mobile) ──────── -->
-  <div class="fr-header__menu fr-modal" id="header-nav-modal" aria-labelledby="header-menu-btn">
+  <!-- Navigation principale (desktop + modal mobile via DSFR JS) -->
+  <div class="fr-header__menu fr-modal" id="header-nav-modal" aria-labelledby="header-nav-btn">
     <div class="fr-container">
       <button class="fr-link--close fr-link" aria-controls="header-nav-modal">Fermer</button>
 
-      <!-- Liens rapides (visibles uniquement dans le tiroir mobile) -->
+      <!-- Auth mobile -->
       <div class="fr-header__menu-links">
         @if (!auth.isLogged()) {
-          <ul class="fr-links-group">
-            <li>
-              <a class="fr-link fr-icon-account-line fr-link--icon-left" routerLink="/login">
-                Se connecter
-              </a>
-            </li>
-            <li>
-              <a class="fr-link fr-icon-account-line fr-link--icon-left" routerLink="/register">
-                S'inscrire
-              </a>
-            </li>
+          <ul class="fr-btns-group">
+            <li><a class="fr-btn fr-btn--secondary" routerLink="/login">Connexion</a></li>
+            <li><a class="fr-btn" routerLink="/register">Créer un compte</a></li>
           </ul>
         } @else {
-          <ul class="fr-links-group">
+          <ul class="fr-btns-group">
             <li>
-              <span class="fr-link fr-icon-account-circle-line fr-link--icon-left">
-                {{ fullName() }}
-              </span>
-            </li>
-            <li>
-              <button class="fr-link fr-icon-logout-box-r-line fr-link--icon-left" (click)="logout()">
-                Déconnexion
-              </button>
+              <span class="fr-text--sm fr-text--bold">{{ fullName() }}</span>
             </li>
           </ul>
         }
       </div>
 
-      <!-- Navigation principale -->
-      <nav class="fr-nav" id="main-navigation" role="navigation" aria-label="Menu principal">
+      <nav class="fr-nav" id="header-nav" role="navigation" aria-label="Menu principal">
         <ul class="fr-nav__list">
 
           <li class="fr-nav__item">
-            <a
-              class="fr-nav__link"
-              routerLink="/resources"
-              routerLinkActive
-              #rlaResources="routerLinkActive"
-              [routerLinkActiveOptions]="{ exact: true }"
-              [attr.aria-current]="rlaResources.isActive ? 'page' : null"
+            <a class="fr-nav__link"
+               routerLink="/resources"
+               routerLinkActive
+               #rlaResources="routerLinkActive"
+               [routerLinkActiveOptions]="{ exact: false }"
+               [attr.aria-current]="rlaResources.isActive ? 'page' : null"
             >Ressources</a>
           </li>
 
           @if (auth.isLogged()) {
             <li class="fr-nav__item">
-              <a
-                class="fr-nav__link"
-                routerLink="/resources/mine"
-                routerLinkActive
-                #rlaMine="routerLinkActive"
-                [attr.aria-current]="rlaMine.isActive ? 'page' : null"
+              <a class="fr-nav__link"
+                 routerLink="/resources/mine"
+                 routerLinkActive
+                 #rlaMine="routerLinkActive"
+                 [attr.aria-current]="rlaMine.isActive ? 'page' : null"
               >Mes ressources</a>
+            </li>
+            <li class="fr-nav__item">
+              <a class="fr-nav__link"
+                 routerLink="/profile"
+                 routerLinkActive
+                 #rlaProfile="routerLinkActive"
+                 [attr.aria-current]="rlaProfile.isActive ? 'page' : null"
+              >Mon profil</a>
+            </li>
+            <li class="fr-nav__item">
+              <a class="fr-nav__link"
+                 routerLink="/dashboard"
+                 routerLinkActive
+                 #rlaDashboard="routerLinkActive"
+                 [attr.aria-current]="rlaDashboard.isActive ? 'page' : null"
+              >Mes interactions</a>
             </li>
           }
 
           @if (auth.isModo()) {
             <li class="fr-nav__item">
-              <a
-                class="fr-nav__link"
-                routerLink="/moderation"
-                routerLinkActive
-                #rlaModo="routerLinkActive"
-                [attr.aria-current]="rlaModo.isActive ? 'page' : null"
+              <a class="fr-nav__link"
+                 routerLink="/moderation"
+                 routerLinkActive
+                 #rlaModo="routerLinkActive"
+                 [attr.aria-current]="rlaModo.isActive ? 'page' : null"
               >Modération</a>
             </li>
           }

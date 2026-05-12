@@ -4,13 +4,12 @@ import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-navbar',
-  standalone: true,
   imports: [RouterLink, RouterLinkActive],
   templateUrl: './navbar.html',
 })
-export class Navbar {
-  readonly auth   = inject(AuthService);
-  readonly router = inject(Router);
+export class NavbarComponent {
+  readonly auth            = inject(AuthService);
+  private readonly router  = inject(Router);
 
   readonly fullName = computed(() => {
     const u = this.auth.user();
