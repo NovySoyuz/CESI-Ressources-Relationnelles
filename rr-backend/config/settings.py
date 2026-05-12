@@ -18,9 +18,9 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'users',
-    #'interactions',
-    #'ressources',
-    #'administration',
+    'interactions',
+    'resources',
+    'administration',
 ]
 
 AUTH_USER_MODEL = 'users.User'
