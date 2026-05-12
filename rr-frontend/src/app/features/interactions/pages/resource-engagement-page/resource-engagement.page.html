@@ -1,0 +1,186 @@
+<section class="resource-hub">
+  <nav class="fr-breadcrumb" aria-label="Fil d Ariane">
+    <ol class="fr-breadcrumb__list">
+      <li>
+        <a class="fr-breadcrumb__link" routerLink="/dashboard/progression">Accueil</a>
+      </li>
+      <li>
+        <a class="fr-breadcrumb__link" routerLink="/dashboard/interactions">Ressources documentaires</a>
+      </li>
+      <li>
+        <a class="fr-breadcrumb__link" aria-current="page">Marianne</a>
+      </li>
+    </ol>
+  </nav>
+
+  <section class="app-page-intro fr-mb-6w">
+    <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
+      <div class="fr-col-12 fr-col-lg-8">
+        <p class="fr-badge fr-badge--no-icon fr-mb-2w">Bibliotheque documentaire</p>
+        <h1 class="fr-h2 fr-mb-2w">Une interface documentaire propre, aeree et alignee sur le DSFR.</h1>
+        <p class="fr-text--lg fr-mb-0">
+          La page privilegie une lecture simple, des cartes a contraste eleve et des actions principales en bleu France
+          #000091.
+        </p>
+      </div>
+
+      <div class="fr-col-12 fr-col-lg-4">
+        <div class="fr-callout app-page-intro__callout">
+          <p class="fr-callout__title">Tester une ressource</p>
+          <p>
+            Chargez un identifiant pour verifier les interactions et les commentaires relies au backend courant.
+          </p>
+          <a class="fr-btn" href="#testeur-ressource">Acceder au panneau de test</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="fr-mb-6w" aria-labelledby="documentary-grid-title">
+    <div class="app-section-head">
+      <div>
+        <h2 id="documentary-grid-title" class="fr-h3 fr-mb-1w">Ressources documentaires</h2>
+        <p class="fr-text--sm fr-mb-0">
+          Une grille de cartes pour presenter la documentation et orienter vers le parcours social.
+        </p>
+      </div>
+    </div>
+
+    <div class="fr-grid-row fr-grid-row--gutters">
+      @for (resource of documentaryResources; track resource.title) {
+        <div class="fr-col-12 fr-col-md-6 fr-col-xl-4">
+          <article class="fr-card app-document-card">
+            <div class="fr-card__body">
+              <div class="fr-card__content">
+                <ul class="app-inline-tags fr-mb-2w">
+                  <li><p class="fr-tag">{{ resource.theme }}</p></li>
+                  <li><p class="fr-tag fr-tag--sm">{{ resource.audience }}</p></li>
+                </ul>
+
+                <h3 class="fr-card__title">
+                  <a href="#testeur-ressource">{{ resource.title }}</a>
+                </h3>
+
+                <p class="fr-card__desc">{{ resource.description }}</p>
+
+                <div class="fr-card__start">
+                  <p class="fr-card__detail">{{ resource.format }}</p>
+                </div>
+
+                <div class="fr-card__end">
+                  <a class="fr-btn fr-btn--secondary fr-btn--sm" href="#testeur-ressource">Tester le parcours</a>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section id="testeur-ressource" class="fr-mb-6w" aria-labelledby="resource-test-title">
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-xl-8">
+        <div class="app-panel app-panel--raised">
+          <div class="app-section-head">
+            <div>
+              <h2 id="resource-test-title" class="fr-h4 fr-mb-1w">Charger une ressource par identifiant</h2>
+              <p class="fr-text--sm fr-mb-0">
+                Ce panneau sert a verifier le comportement des interactions et des commentaires dans le module social.
+              </p>
+            </div>
+          </div>
+
+          <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--bottom">
+            <div class="fr-col-12 fr-col-lg-9">
+              <div class="fr-input-group" [class.fr-input-group--error]="resourceIdControl.invalid && resourceIdControl.touched">
+                <label class="fr-label" for="resource-id">
+                  Identifiant de la ressource
+                  <span class="fr-hint-text">Exemple : 31e4c0bf-9ee1-41d6-b8df-71d6f641d024</span>
+                </label>
+                <input
+                  id="resource-id"
+                  class="fr-input"
+                  [formControl]="resourceIdControl"
+                  placeholder="Saisissez un UUID de ressource"
+                />
+              </div>
+            </div>
+
+            <div class="fr-col-12 fr-col-lg-3">
+              <button class="fr-btn app-full-width-button" type="button" (click)="applyResource()">Charger</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fr-col-12 fr-col-xl-4">
+        <div class="app-panel">
+          <h2 class="fr-h6 fr-mb-2w">Repere visuel</h2>
+          <p class="fr-text--sm">
+            Les actions primaires conservent le bleu France officiel, le fond reste neutre et les composants suivent
+            le contraste du DSFR.
+          </p>
+
+          @if (activeResourceId()) {
+            <p class="fr-text--sm fr-mb-0"><strong>UUID courant :</strong> {{ activeResourceId() }}</p>
+          } @else {
+            <p class="fr-text--sm fr-mb-0">Aucun UUID charge pour le moment.</p>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  @if (activeResourceId()) {
+    <div class="fr-grid-row fr-grid-row--gutters">
+      <div class="fr-col-12 fr-col-lg-6">
+        <app-interaction-buttons
+          [resourceId]="activeResourceId()"
+          [initialState]="lastInteraction()"
+          (stateChanged)="handleInteractionChange($event)"
+        ></app-interaction-buttons>
+      </div>
+
+      <div class="fr-col-12 fr-col-lg-6">
+        <app-comment-form [resourceId]="activeResourceId()" (submitted)="handleCommentCreated($event)"></app-comment-form>
+      </div>
+
+      @if (lastInteraction() || lastComment()) {
+        <div class="fr-col-12">
+          <div class="fr-grid-row fr-grid-row--gutters app-state-grid">
+            @if (lastInteraction(); as state) {
+              <div class="fr-col-12 fr-col-lg-6">
+                <div class="app-panel app-state-card">
+                  <h2 class="fr-h6 fr-mb-1w">Etat d interaction</h2>
+                  <p class="fr-text--sm fr-mb-0">
+                    like={{ state.liked }} · favori={{ state.favorite }} · bookmark={{ state.bookmarked }} · exploitee={{ state.exploited }}
+                  </p>
+                </div>
+              </div>
+            }
+
+            @if (lastComment(); as comment) {
+              <div class="fr-col-12 fr-col-lg-6">
+                <div class="app-panel app-state-card">
+                  <h2 class="fr-h6 fr-mb-1w">Dernier commentaire poste</h2>
+                  <p class="fr-text--sm fr-mb-0">Identifiant : {{ comment.id }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="fr-col-12">
+        <app-comment-list [resourceId]="activeResourceId()" [refreshKey]="refreshKey()"></app-comment-list>
+      </div>
+    </div>
+  } @else {
+    <div class="app-panel">
+      <p class="fr-text--sm fr-mb-0">
+        Saisissez un UUID de ressource pour activer les composants d interaction et de commentaire.
+      </p>
+    </div>
+  }
+</section>

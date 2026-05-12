@@ -1,0 +1,108 @@
+<section class="dashboard-page">
+  <nav class="fr-breadcrumb fr-mb-3w" aria-label="Fil d Ariane">
+    <ol class="fr-breadcrumb__list">
+      <li>
+        <a class="fr-breadcrumb__link" routerLink="/dashboard/progression">Progression</a>
+      </li>
+      <li>
+        <a class="fr-breadcrumb__link" routerLink="/dashboard/interactions" aria-current="page">Mes interactions</a>
+      </li>
+    </ol>
+  </nav>
+
+  <section class="fr-mb-6w" aria-labelledby="my-interactions-title">
+    <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
+      <div class="fr-col-12 fr-col-lg-8">
+        <p class="fr-badge fr-badge--no-icon fr-mb-2w">Tableau de bord usager</p>
+        <h1 id="my-interactions-title" class="fr-h2 fr-mb-2w">Mes interactions</h1>
+        <p class="fr-text--lg fr-mb-0">
+          Les collections actuelles remontent des etats d interaction par ressource et orientent vers la page de test detaillee.
+        </p>
+      </div>
+
+      @if (summary(); as totals) {
+        <div class="fr-col-12 fr-col-lg-4">
+          <div class="fr-callout dashboard-page__callout">
+            <p class="fr-callout__title">Suivi consolide</p>
+            <p class="fr-text--sm">{{ totalTrackedResources() }} ressources suivies dans les differentes collections.</p>
+            <p class="dashboard-page__total fr-mb-2w">{{ totals.total }}</p>
+            <ul class="app-inline-tags">
+              <li><p class="fr-tag">Likes {{ totals.likes }}</p></li>
+              <li><p class="fr-tag">Favoris {{ totals.favorites }}</p></li>
+              <li><p class="fr-tag">Bookmarks {{ totals.bookmarks }}</p></li>
+              <li><p class="fr-tag">Exploitees {{ totals.exploited }}</p></li>
+            </ul>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  @if (isLoading()) {
+    <div class="fr-alert fr-alert--info fr-mb-3w" role="status">
+      <p>Chargement des collections d interactions...</p>
+    </div>
+  }
+
+  @if (errorMessage(); as message) {
+    <div class="fr-alert fr-alert--error fr-mb-3w" role="alert">
+      <p>{{ message }}</p>
+    </div>
+  }
+
+  <section aria-labelledby="collections-title">
+    <div class="app-section-head">
+      <div>
+        <h2 id="collections-title" class="fr-h4 fr-mb-1w">Collections d interactions</h2>
+        <p class="fr-text--sm fr-mb-0">Chaque bloc permet de rouvrir directement une ressource dans le parcours social.</p>
+      </div>
+    </div>
+
+    <div class="fr-grid-row fr-grid-row--gutters dashboard-grid">
+      @for (section of sections(); track section.collection) {
+        <div class="fr-col-12 fr-col-lg-6">
+          <section class="fr-card dashboard-card">
+            <div class="fr-card__body">
+              <div class="fr-card__content">
+                <div class="dashboard-card__header">
+                  <div>
+                    <h3 class="fr-h5 fr-mb-1w">{{ section.label }}</h3>
+                    <p class="fr-card__desc fr-mb-0">{{ section.intro }}</p>
+                  </div>
+                  <p class="fr-badge fr-badge--blue-france fr-badge--no-icon fr-mb-0">{{ section.items.length }}</p>
+                </div>
+
+                @if (section.items.length === 0) {
+                  <div class="fr-highlight">
+                    <p class="fr-text--sm fr-mb-0">Aucune ressource dans cette collection pour le moment.</p>
+                  </div>
+                } @else {
+                  <div class="dashboard-card__list">
+                    @for (item of section.items; track item.resourceId) {
+                      <a
+                        class="dashboard-card__item"
+                        [routerLink]="['/resource-social']"
+                        [queryParams]="{ resourceId: item.resourceId }"
+                      >
+                        <div>
+                          <p class="fr-text--sm fr-mb-1w">Ressource</p>
+                          <strong>{{ item.resourceId }}</strong>
+                        </div>
+
+                        <p class="dashboard-card__flags fr-text--sm fr-mb-0">
+                          like={{ item.liked }} · favori={{ item.favorite }} · bookmark={{ item.bookmarked }} · exploitee={{ item.exploited }}
+                        </p>
+
+                        <span class="fr-link">Ouvrir le detail</span>
+                      </a>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          </section>
+        </div>
+      }
+    </div>
+  </section>
+</section>

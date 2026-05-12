@@ -1,1 +1,84 @@
-/* You can add global styles to this file, and also import other style files */
+@import '@gouvfr/dsfr/dist/dsfr.main.min.css';
+
+html,
+body {
+	min-height: 100%;
+}
+
+body {
+	margin: 0;
+	background: var(--background-alt-grey);
+	color: var(--text-default-grey);
+}
+
+.app-panel {
+	padding: 1.5rem;
+	border-radius: 1rem;
+	background: #ffffff;
+	box-shadow: inset 0 0 0 1px var(--border-default-grey);
+}
+
+.app-panel--raised {
+	box-shadow:
+		inset 0 0 0 1px var(--border-default-grey),
+		0 0.75rem 1.5rem rgba(0, 0, 18, 0.08);
+}
+
+.fr-py-6w {
+	padding-block: 3rem;
+}
+
+.fr-mb-0 {
+	margin-bottom: 0 !important;
+}
+
+.fr-mb-1w {
+	margin-bottom: 0.5rem !important;
+}
+
+.fr-mb-2w {
+	margin-bottom: 1rem !important;
+}
+
+.fr-mb-3w {
+	margin-bottom: 1.5rem !important;
+}
+
+.fr-mb-6w {
+	margin-bottom: 3rem !important;
+}
+
+.app-section-head {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 1rem;
+	margin-bottom: 1.5rem;
+}
+
+.app-inline-tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.app-full-width-button {
+	width: 100%;
+	justify-content: center;
+	background-color: #000091;
+	box-shadow: inset 0 0 0 1px #000091;
+}
+
+.app-full-width-button:hover,
+.app-full-width-button:active {
+	background-color: #000091;
+}
+
+@media (max-width: 48rem) {
+	.app-section-head {
+		flex-direction: column;
+	}
+}
