@@ -23,7 +23,7 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: user_is_modo
+                  name: user_la_mode
                   type: BOOLEAN
                   defaultValueBoolean: false
                   constraints:
