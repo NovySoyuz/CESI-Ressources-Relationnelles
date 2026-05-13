@@ -1,0 +1,61 @@
+<section class="app-panel app-panel--raised comment-panel">
+  <div class="app-section-head">
+    <div>
+      <h3 class="fr-h5 fr-mb-1w">Commentaires</h3>
+      <p class="fr-text--sm fr-mb-0">Flux brut expose par le backend pour la ressource selectionnee.</p>
+    </div>
+    @if (isLoading()) {
+      <p class="fr-text--sm fr-mb-0">Chargement...</p>
+    } @else {
+      <p class="fr-badge fr-badge--no-icon fr-mb-0">{{ comments().length }} element(s)</p>
+    }
+  </div>
+
+  @if (errorMessage(); as message) {
+    <div class="fr-alert fr-alert--error fr-mb-3w">
+      <p>{{ message }}</p>
+    </div>
+  }
+
+  @if (infoMessage(); as message) {
+    <div class="fr-alert fr-alert--success fr-mb-3w">
+      <p>{{ message }}</p>
+    </div>
+  }
+
+  @if (!isLoading() && comments().length === 0) {
+    <p class="fr-text--sm fr-mb-0">Aucun commentaire pour cette ressource.</p>
+  }
+
+  <div class="comment-list">
+    @for (comment of comments(); track comment.id) {
+      <article class="fr-card comment-card">
+        <div class="fr-card__body">
+          <div class="fr-card__content">
+            <header class="comment-card__header">
+              <div>
+                <p class="fr-badge fr-badge--no-icon fr-mb-1w">Auteur {{ shortAuthor(comment.authorId) }}</p>
+                <time class="fr-text--xs fr-mb-0" [attr.datetime]="comment.createdAt">
+                  {{ comment.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+                </time>
+              </div>
+
+              <button
+                class="fr-btn fr-btn--secondary fr-btn--sm"
+                type="button"
+                [disabled]="deletingCommentId() === comment.id"
+                (click)="deleteComment(comment)"
+              >
+                {{ deletingCommentId() === comment.id ? 'Suppression...' : 'Supprimer' }}
+              </button>
+            </header>
+
+            <p class="comment-card__text">{{ comment.text }}</p>
+
+            <app-comment-reply [commentId]="comment.id" (replied)="handleReply($event)"></app-comment-reply>
+          </div>
+        </div>
+      </article>
+    }
+  </div>
+</section>

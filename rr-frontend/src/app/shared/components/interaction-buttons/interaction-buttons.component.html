@@ -1,0 +1,40 @@
+<section class="app-panel app-panel--raised interaction-panel">
+  <div class="app-section-head">
+    <div>
+      <h3 class="fr-h5 fr-mb-1w">Actions citoyennes</h3>
+      <p class="fr-text--sm fr-mb-0">Les boutons reprennent la hierarchie visuelle du DSFR.</p>
+    </div>
+    @if (isLoading()) {
+      <p class="fr-text--sm fr-mb-0">Chargement de l etat...</p>
+    }
+  </div>
+
+  @if (errorMessage(); as message) {
+    <div class="fr-alert fr-alert--error fr-mb-3w">
+      <p>{{ message }}</p>
+    </div>
+  }
+
+  <div class="interaction-grid">
+    @for (action of actions; track action.kind) {
+      <button
+        class="fr-btn interaction-chip"
+        type="button"
+        [class.fr-btn--secondary]="!isActive(action.kind)"
+        [class.interaction-chip--active]="isActive(action.kind)"
+        [class.interaction-chip--pending]="pendingKind() === action.kind"
+        [disabled]="pendingKind() !== null"
+        (click)="toggle(action.kind)"
+      >
+        <span class="interaction-chip__copy">
+          <strong>{{ action.label }}</strong>
+          <span>{{ action.caption }}</span>
+        </span>
+
+        @if (countFor(action.kind); as count) {
+          <span class="interaction-chip__count">{{ count }}</span>
+        }
+      </button>
+    }
+  </div>
+</section>

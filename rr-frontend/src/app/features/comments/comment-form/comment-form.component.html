@@ -1,0 +1,42 @@
+<section class="app-panel app-panel--raised">
+  <div class="app-section-head">
+    <div>
+      <h3 class="fr-h5 fr-mb-1w">Ajouter un commentaire</h3>
+      <p class="fr-text--sm fr-mb-0">Le formulaire envoie un commentaire sur la ressource actuellement chargee.</p>
+    </div>
+    <p class="fr-badge fr-badge--no-icon fr-mb-0">{{ commentControl.value.length }}/1200</p>
+  </div>
+
+  @if (errorMessage(); as message) {
+    <div class="fr-alert fr-alert--error fr-mb-3w">
+      <p>{{ message }}</p>
+    </div>
+  }
+
+  <div class="fr-input-group" [class.fr-input-group--error]="commentControl.invalid && commentControl.touched">
+    <label class="fr-label" for="comment-textarea">
+      Votre commentaire
+      <span class="fr-hint-text">Message requis, 1200 caracteres maximum.</span>
+    </label>
+    <textarea
+      id="comment-textarea"
+      class="fr-input"
+      [formControl]="commentControl"
+      placeholder="Partagez un retour utile, une piste de lecture ou une mise en pratique..."
+    ></textarea>
+  </div>
+
+  <div class="form-footer">
+    <p class="fr-text--sm fr-mb-0">
+      @if (commentControl.invalid && commentControl.touched) {
+        Le message est requis et limite a 1200 caracteres.
+      } @else {
+        Le backend exige une authentification valide pour poster.
+      }
+    </p>
+
+    <button class="fr-btn" type="button" [disabled]="isSubmitting()" (click)="submit()">
+      {{ isSubmitting() ? 'Envoi...' : 'Poster' }}
+    </button>
+  </div>
+</section>

@@ -1,0 +1,32 @@
+.comment-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.comment-card {
+  height: 100%;
+}
+
+.comment-card .fr-card__content {
+  display: grid;
+  gap: 1rem;
+}
+
+.comment-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.comment-card__text {
+  margin: 0;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 640px) {
+  .comment-card__header {
+    flex-direction: column;
+  }
+}

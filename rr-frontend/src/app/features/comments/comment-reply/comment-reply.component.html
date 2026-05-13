@@ -1,0 +1,35 @@
+<div class="reply-box">
+  <button class="fr-btn fr-btn--secondary fr-btn--sm" type="button" (click)="toggleForm()">
+    {{ isExpanded() ? 'Annuler' : 'Repondre' }}
+  </button>
+
+  @if (isExpanded()) {
+    <div class="app-panel reply-box__panel">
+      @if (errorMessage(); as message) {
+        <div class="fr-alert fr-alert--error">
+          <p>{{ message }}</p>
+        </div>
+      }
+
+      <div class="fr-input-group" [class.fr-input-group--error]="replyControl.invalid && replyControl.touched">
+        <label class="fr-label" for="comment-reply-textarea">
+          Votre reponse
+          <span class="fr-hint-text">Le backend ne publie pas encore cet endpoint dans la version courante.</span>
+        </label>
+        <textarea
+          id="comment-reply-textarea"
+          class="fr-input"
+          [formControl]="replyControl"
+          placeholder="Ajoutez une reponse courte et utile..."
+        ></textarea>
+      </div>
+
+      <div class="reply-box__actions">
+        <p class="fr-text--xs fr-mb-0">Le point d entree /api/comments/:id/reply/ n est pas encore present dans le backend courant.</p>
+        <button class="fr-btn fr-btn--sm" type="button" [disabled]="isSubmitting()" (click)="submit()">
+          {{ isSubmitting() ? 'Envoi...' : 'Envoyer' }}
+        </button>
+      </div>
+    </div>
+  }
+</div>
