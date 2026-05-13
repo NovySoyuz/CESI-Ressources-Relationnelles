@@ -148,13 +148,13 @@ class ResourceWriteSerializer(serializers.Serializer):
         required=False, allow_blank=True, allow_null=True
     )
     resource_label = serializers.ChoiceField(
-        choices=[k for k in SUBTYPE_MAP], required=False, allow_null=True
+        choices=[k for k in SUBTYPE_MAP], required=True
     )
     categories = serializers.ListField(
-        child=serializers.UUIDField(), required=False, default=list
+        child=serializers.UUIDField(), required=True, min_length=1
     )
     relations = serializers.ListField(
-        child=serializers.UUIDField(), required=False, default=list
+        child=serializers.UUIDField(), required=True, min_length=1
     )
     detail = serializers.DictField(required=False, default=dict)
 

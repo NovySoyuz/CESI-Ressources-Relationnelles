@@ -40,7 +40,11 @@ export class ResourceService {
   }
 
   publish(id: string): Observable<Resource> {
-    return this.api.post<Resource>(`/api/resources/${id}/publish/`, {});
+    return this.api.patch<Resource>(`/api/resources/${id}/publish/`, {});
+  }
+
+  pending(): Observable<Resource[]> {
+    return this.api.get<Resource[]>('/api/resources/pending/');
   }
 
   myResources(): Observable<PagedResponse<Resource>> {
@@ -56,9 +60,9 @@ export class ResourceService {
   private _qs(filters?: ResourceFilters): string {
     if (!filters) return '';
     const p = new URLSearchParams();
-    if (filters.category) p.set('category', filters.category);
+    filters.categories?.forEach(id => p.append('category', id));
+    filters.relations?.forEach(id  => p.append('relation', id));
     if (filters.label)    p.set('label',    filters.label);
-    if (filters.relation) p.set('relation', filters.relation);
     if (filters.q)        p.set('search',   filters.q);
     if (filters.ordering) p.set('ordering', filters.ordering);
     const s = p.toString();

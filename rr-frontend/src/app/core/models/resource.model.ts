@@ -105,9 +105,9 @@ export interface PagedResponse<T> {
 }
 
 export interface ResourceFilters {
-  category?: string;
-  label?:    string;
-  relation?: string;
-  q?:        string;
-  ordering?: string;
+  categories?: string[];
+  label?:      string;
+  relations?:  string[];
+  q?:          string;
+  ordering?:   string;
 }

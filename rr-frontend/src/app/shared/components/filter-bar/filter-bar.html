@@ -1,47 +1,117 @@
 <div class="fr-mb-4w">
-  <div class="fr-grid-row fr-grid-row--gutters">
+  <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--bottom">
 
+    <!-- Type de ressource -->
     <div class="fr-col-12 fr-col-sm-4">
-      <div class="fr-select-group">
-        <label class="fr-label" for="filter-category">Catégorie</label>
-        <select class="fr-select" id="filter-category" [(ngModel)]="filters.category" (change)="emit()">
-          <option value="">Toutes les catégories</option>
-          @for (c of categories(); track c.category_id) {
-            <option [value]="c.category_id">{{ c.label }}</option>
-          }
-        </select>
+      <label class="fr-label" for="filter-label-btn">Type de ressource</label>
+      <div class="filter-dropdown">
+        <button type="button" id="filter-label-btn"
+                class="filter-dropdown__trigger"
+                [attr.aria-expanded]="openPanel === 'label'"
+                (click)="toggle('label', $event)">
+          {{ selectedLabel ? labelFor(selectedLabel) : 'Tous les types' }}
+        </button>
+        @if (openPanel === 'label') {
+          <div class="filter-dropdown__panel"
+               (click)="$event.stopPropagation()"
+               (keydown)="$event.stopPropagation()">
+            <div class="fr-radio-group fr-radio-group--sm">
+              <input type="radio" id="label-none" name="label"
+                     [checked]="selectedLabel === ''"
+                     (change)="selectLabel('')">
+              <label class="fr-label" for="label-none">Tous les types</label>
+            </div>
+            @for (opt of labelOptions; track opt[0]) {
+              <div class="fr-radio-group fr-radio-group--sm">
+                <input type="radio" [id]="'label-' + opt[0]" name="label"
+                       [checked]="selectedLabel === opt[0]"
+                       (change)="selectLabel(opt[0])">
+                <label class="fr-label" [for]="'label-' + opt[0]">{{ opt[1] }}</label>
+              </div>
+            }
+          </div>
+        }
       </div>
     </div>
 
-    <div class="fr-col-12 fr-col-sm-4">
-      <div class="fr-select-group">
-        <label class="fr-label" for="filter-label">Type de ressource</label>
-        <select class="fr-select" id="filter-label" [(ngModel)]="filters.label" (change)="emit()">
-          <option value="">Tous les types</option>
-          @for (opt of labelOptions; track opt[0]) {
-            <option [value]="opt[0]">{{ opt[1] }}</option>
+    <!-- Catégories -->
+    @if (categories().length > 0) {
+      <div class="fr-col-12 fr-col-sm-4">
+        <label class="fr-label" for="filter-cat-btn">Catégories</label>
+        <div class="filter-dropdown">
+          <button type="button" id="filter-cat-btn"
+                  class="filter-dropdown__trigger"
+                  [attr.aria-expanded]="openPanel === 'cat'"
+                  (click)="toggle('cat', $event)">
+            @if (selectedCategories.length === 0) {
+              Toutes les catégories
+            } @else {
+              {{ selectedCategories.length }} sélectionnée(s)
+              <span class="filter-badge">{{ selectedCategories.length }}</span>
+            }
+          </button>
+          @if (openPanel === 'cat') {
+            <div class="filter-dropdown__panel"
+                 (click)="$event.stopPropagation()"
+                 (keydown)="$event.stopPropagation()">
+              @for (c of categories(); track c.category_id) {
+                <div class="fr-checkbox-group fr-checkbox-group--sm">
+                  <input type="checkbox"
+                         [id]="'cat-' + c.category_id"
+                         [checked]="selectedCategories.includes(c.category_id)"
+                         (change)="toggleCategory(c.category_id)">
+                  <label class="fr-label" [for]="'cat-' + c.category_id">{{ c.label }}</label>
+                </div>
+              }
+            </div>
           }
-        </select>
+        </div>
       </div>
-    </div>
+    }
 
-    <div class="fr-col-12 fr-col-sm-4">
-      <div class="fr-select-group">
-        <label class="fr-label" for="filter-relation">Type de relation</label>
-        <select class="fr-select" id="filter-relation" [(ngModel)]="filters.relation" (change)="emit()">
-          <option value="">Toutes les relations</option>
-          @for (r of relations(); track r.relation_id) {
-            <option [value]="r.relation_id">{{ r.label }}</option>
+    <!-- Types de relation -->
+    @if (relations().length > 0) {
+      <div class="fr-col-12 fr-col-sm-4">
+        <label class="fr-label" for="filter-rel-btn">Types de relation</label>
+        <div class="filter-dropdown">
+          <button type="button" id="filter-rel-btn"
+                  class="filter-dropdown__trigger"
+                  [attr.aria-expanded]="openPanel === 'rel'"
+                  (click)="toggle('rel', $event)">
+            @if (selectedRelations.length === 0) {
+              Tous les types de relation
+            } @else {
+              {{ selectedRelations.length }} sélectionné(s)
+              <span class="filter-badge">{{ selectedRelations.length }}</span>
+            }
+          </button>
+          @if (openPanel === 'rel') {
+            <div class="filter-dropdown__panel"
+                 (click)="$event.stopPropagation()"
+                 (keydown)="$event.stopPropagation()">
+              @for (r of relations(); track r.relation_id) {
+                <div class="fr-checkbox-group fr-checkbox-group--sm">
+                  <input type="checkbox"
+                         [id]="'rel-' + r.relation_id"
+                         [checked]="selectedRelations.includes(r.relation_id)"
+                         (change)="toggleRelation(r.relation_id)">
+                  <label class="fr-label" [for]="'rel-' + r.relation_id">{{ r.label }}</label>
+                </div>
+              }
+            </div>
           }
-        </select>
+        </div>
       </div>
-    </div>
+    }
 
   </div>
 
-  <button
-    class="fr-btn fr-btn--tertiary-no-outline fr-btn--sm fr-icon-close-circle-line fr-btn--icon-left fr-mt-1w"
-    (click)="reset()"
-  >Réinitialiser les filtres</button>
+  @if (selectedCategories.length || selectedRelations.length || selectedLabel) {
+    <button type="button"
+            class="fr-btn fr-btn--tertiary-no-outline fr-btn--sm fr-icon-close-circle-line fr-btn--icon-left fr-mt-2w"
+            (click)="reset()">
+      Réinitialiser les filtres
+    </button>
+  }
 
 </div>

@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormControl, Validators, AbstractControl } from '@angular/forms';
 import { Resource, ResourceLabel, RESOURCE_LABEL_DISPLAY, Category, Relation } from '../../../core/models/resource.model';
 import { ResourceService } from '../services/resource.service';
 import { ApiService } from '../../../core/services/api.service';
@@ -27,13 +27,16 @@ export class ResourceForm implements OnInit {
 
   readonly labelOptions = Object.entries(RESOURCE_LABEL_DISPLAY) as [ResourceLabel, string][];
 
+  private static minOne(control: AbstractControl) {
+    return (control.value as string[]).length > 0 ? null : { minOne: true };
+  }
+
   readonly form = this.fb.group({
-    // Champs communs
     resource_title:       ['', [Validators.required, Validators.maxLength(255)]],
     resource_description: [''],
-    resource_label:       ['' as string],
-    categories:           [[] as string[]],
-    relations:            [[] as string[]],
+    resource_label:       ['', Validators.required],
+    categories:           new FormControl<string[]>([], { nonNullable: true, validators: ResourceForm.minOne }),
+    relations:            new FormControl<string[]>([], { nonNullable: true, validators: ResourceForm.minOne }),
     // reading_sheet
     book_title:           [''],
     book_author:          [''],
@@ -107,7 +110,10 @@ export class ResourceForm implements OnInit {
   }
 
   submit(): void {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
     this.loading.set(true);
     this.error.set(null);
     const payload = this.buildPayload();

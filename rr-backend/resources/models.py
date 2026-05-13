@@ -35,7 +35,7 @@ class Resource(models.Model):
     resource_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     resource_author = models.ForeignKey(
         'users.Citizen',
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
         db_column='resource_author',
     )
     resource_created_at = models.DateTimeField(auto_now_add=True)
@@ -60,10 +60,10 @@ class Resource(models.Model):
 
 class ResourceCategory(models.Model):
     resource = models.ForeignKey(
-        Resource, on_delete=models.DO_NOTHING, db_column='resource_id'
+        Resource, on_delete=models.CASCADE, db_column='resource_id'
     )
     category = models.ForeignKey(
-        Category, on_delete=models.DO_NOTHING, db_column='category_id'
+        Category, on_delete=models.CASCADE, db_column='category_id'
     )
 
     class Meta:
@@ -74,10 +74,10 @@ class ResourceCategory(models.Model):
 
 class ResourceRelation(models.Model):
     resource = models.ForeignKey(
-        Resource, on_delete=models.DO_NOTHING, db_column='resource_id'
+        Resource, on_delete=models.CASCADE, db_column='resource_id'
     )
     relation = models.ForeignKey(
-        Relation, on_delete=models.DO_NOTHING, db_column='relation_id'
+        Relation, on_delete=models.CASCADE, db_column='relation_id'
     )
 
     class Meta:
@@ -88,7 +88,7 @@ class ResourceRelation(models.Model):
 
 class ResourceReadingSheet(models.Model):
     resource = models.OneToOneField(
-        Resource, on_delete=models.DO_NOTHING, primary_key=True,
+        Resource, on_delete=models.CASCADE, primary_key=True,
         db_column='resource_id', related_name='reading_sheet',
     )
     book_title = models.CharField(max_length=255)
@@ -102,7 +102,7 @@ class ResourceReadingSheet(models.Model):
 
 class ResourceGames(models.Model):
     resource = models.OneToOneField(
-        Resource, on_delete=models.DO_NOTHING, primary_key=True,
+        Resource, on_delete=models.CASCADE, primary_key=True,
         db_column='resource_id', related_name='games',
     )
     game_url = models.CharField(max_length=512, null=True, blank=True)
@@ -116,7 +116,7 @@ class ResourceGames(models.Model):
 
 class ResourceVideos(models.Model):
     resource = models.OneToOneField(
-        Resource, on_delete=models.DO_NOTHING, primary_key=True,
+        Resource, on_delete=models.CASCADE, primary_key=True,
         db_column='resource_id', related_name='videos',
     )
     video_url = models.CharField(max_length=512)
@@ -130,7 +130,7 @@ class ResourceVideos(models.Model):
 
 class ResourcePDF(models.Model):
     resource = models.OneToOneField(
-        Resource, on_delete=models.DO_NOTHING, primary_key=True,
+        Resource, on_delete=models.CASCADE, primary_key=True,
         db_column='resource_id', related_name='pdf',
     )
     pdf_url = models.CharField(max_length=512)
@@ -145,7 +145,7 @@ class ResourcePDF(models.Model):
 
 class ResourceActivity(models.Model):
     resource = models.OneToOneField(
-        Resource, on_delete=models.DO_NOTHING, primary_key=True,
+        Resource, on_delete=models.CASCADE, primary_key=True,
         db_column='resource_id', related_name='activity',
     )
     activity_instructions = models.TextField(null=True, blank=True)
@@ -159,7 +159,7 @@ class ResourceActivity(models.Model):
 
 class ResourceArticle(models.Model):
     resource = models.OneToOneField(
-        Resource, on_delete=models.DO_NOTHING, primary_key=True,
+        Resource, on_delete=models.CASCADE, primary_key=True,
         db_column='resource_id', related_name='article',
     )
     article_url = models.CharField(max_length=512)
@@ -172,7 +172,7 @@ class ResourceArticle(models.Model):
 
 class ResourceChallengeCard(models.Model):
     resource = models.OneToOneField(
-        Resource, on_delete=models.DO_NOTHING, primary_key=True,
+        Resource, on_delete=models.CASCADE, primary_key=True,
         db_column='resource_id', related_name='challenge_card',
     )
     challenge_card_duration = models.IntegerField(null=True, blank=True)
@@ -184,7 +184,7 @@ class ResourceChallengeCard(models.Model):
 
 class ResourceExercise(models.Model):
     resource = models.OneToOneField(
-        Resource, on_delete=models.DO_NOTHING, primary_key=True,
+        Resource, on_delete=models.CASCADE, primary_key=True,
         db_column='resource_id', related_name='exercise',
     )
     exercise_instructions = models.TextField(null=True, blank=True)

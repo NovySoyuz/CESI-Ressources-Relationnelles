@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ResourceService } from '../services/resource.service';
+import { ApiService } from '../../../core/services/api.service';
 import { Resource, Category, Relation, ResourceFilters } from '../../../core/models/resource.model';
 import { ResourceCard } from '../../../shared/components/resource-card/resource-card';
 import { FilterBar } from '../../../shared/components/filter-bar/filter-bar';
@@ -15,6 +16,7 @@ import { FilterBar } from '../../../shared/components/filter-bar/filter-bar';
 })
 export class ResourceList implements OnInit, OnDestroy {
   private readonly service = inject(ResourceService);
+  private readonly api     = inject(ApiService);
   private readonly search$ = new Subject<string>();
 
   resources  = signal<Resource[]>([]);
@@ -29,6 +31,13 @@ export class ResourceList implements OnInit, OnDestroy {
   ordering         = '-resource_created_at';
 
   ngOnInit(): void {
+    this.api.get<Category[]>('/api/resources/categories/').subscribe({
+      next: res => this.categories.set(res),
+    });
+    this.api.get<Relation[]>('/api/resources/relations/').subscribe({
+      next: res => this.relations.set(res),
+    });
+
     this.loadResources();
 
     this.search$.pipe(debounceTime(300), distinctUntilChanged()).subscribe(q => {
@@ -63,24 +72,11 @@ export class ResourceList implements OnInit, OnDestroy {
         this.resources.set(res.results);
         this.total.set(res.count);
         this.loading.set(false);
-        this.deriveFilters(res.results);
       },
       error: () => {
         this.error.set('Erreur lors du chargement des ressources.');
         this.loading.set(false);
       },
     });
-  }
-
-  // Déduit les catégories/relations disponibles depuis les ressources chargées
-  private deriveFilters(resources: Resource[]): void {
-    const catMap = new Map<string, Category>();
-    const relMap = new Map<string, Relation>();
-    for (const r of resources) {
-      for (const c of r.categories) catMap.set(c.category_id, c);
-      for (const rel of r.relations) relMap.set(rel.relation_id, rel);
-    }
-    if (catMap.size > 0) this.categories.set(Array.from(catMap.values()));
-    if (relMap.size > 0) this.relations.set(Array.from(relMap.values()));
   }
 }

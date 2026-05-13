@@ -69,7 +69,7 @@
   <!-- Résultats -->
   @if (!loading() && !error()) {
     @if (resources().length > 0) {
-      <ul class="fr-grid-row fr-grid-row--gutters fr-grid-row--equal-height">
+      <ul class="fr-grid-row fr-grid-row--gutters fr-grid-row--equal-height" style="position: relative; z-index: 0">
         @for (r of resources(); track r.resource_id) {
           <li class="fr-col-12 fr-col-md-6 fr-col-lg-4">
             <app-resource-card [resource]="r" />

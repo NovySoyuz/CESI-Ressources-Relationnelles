@@ -68,22 +68,33 @@
           ></textarea>
         </div>
 
-        <div class="fr-select-group fr-mt-3w">
-          <label class="fr-label" for="resource-label">Type de ressource</label>
-          <select class="fr-select" formControlName="resource_label" id="resource-label">
+        <div class="fr-select-group fr-mt-3w"
+             [class.fr-select-group--error]="form.get('resource_label')?.invalid && form.get('resource_label')?.touched">
+          <label class="fr-label" for="resource-label">
+            Type de ressource
+            <span class="fr-hint-text">Obligatoire</span>
+          </label>
+          <select class="fr-select"
+                  [class.fr-select--error]="form.get('resource_label')?.invalid && form.get('resource_label')?.touched"
+                  formControlName="resource_label" id="resource-label">
             <option value="">— Choisir un type —</option>
             @for (opt of labelOptions; track opt[0]) {
               <option [value]="opt[0]">{{ opt[1] }}</option>
             }
           </select>
+          @if (form.get('resource_label')?.invalid && form.get('resource_label')?.touched) {
+            <p class="fr-error-text">Le type de ressource est obligatoire.</p>
+          }
         </div>
 
         <!-- Catégories -->
         @if (categories().length > 0) {
           <div class="fr-form-group fr-mt-3w">
-            <fieldset class="fr-fieldset">
+            <fieldset class="fr-fieldset"
+                      [class.fr-fieldset--error]="form.get('categories')?.invalid && form.get('categories')?.touched">
               <legend class="fr-fieldset__legend fr-text--regular">
                 Catégories
+                <span class="fr-hint-text">Obligatoire — au moins une</span>
               </legend>
               <div class="fr-fieldset__content">
                 <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
@@ -97,6 +108,9 @@
                     >{{ cat.label }}</button>
                   }
                 </div>
+                @if (form.get('categories')?.invalid && form.get('categories')?.touched) {
+                  <p class="fr-error-text fr-mt-1w">Sélectionnez au moins une catégorie.</p>
+                }
               </div>
             </fieldset>
           </div>
@@ -105,9 +119,11 @@
         <!-- Relations -->
         @if (relations().length > 0) {
           <div class="fr-form-group fr-mt-3w">
-            <fieldset class="fr-fieldset">
+            <fieldset class="fr-fieldset"
+                      [class.fr-fieldset--error]="form.get('relations')?.invalid && form.get('relations')?.touched">
               <legend class="fr-fieldset__legend fr-text--regular">
                 Types de relation
+                <span class="fr-hint-text">Obligatoire — au moins un</span>
               </legend>
               <div class="fr-fieldset__content">
                 <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
@@ -121,6 +137,9 @@
                     >{{ rel.label }}</button>
                   }
                 </div>
+                @if (form.get('relations')?.invalid && form.get('relations')?.touched) {
+                  <p class="fr-error-text fr-mt-1w">Sélectionnez au moins un type de relation.</p>
+                }
               </div>
             </fieldset>
           </div>
