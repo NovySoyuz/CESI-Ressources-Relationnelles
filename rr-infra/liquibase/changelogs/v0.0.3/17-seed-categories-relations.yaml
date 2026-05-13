@@ -1,0 +1,90 @@
+databaseChangeLog:
+  - changeSet:
+      id: 17-seed-categories
+      author: team-resources-relationnelles
+      comment: "Données de référence — catégories"
+      changes:
+        - insert:
+            tableName: category
+            columns:
+              - column: {name: category_id, value: "a1000000-0000-0000-0000-000000000001"}
+              - column: {name: label,       value: "Bien-être"}
+        - insert:
+            tableName: category
+            columns:
+              - column: {name: category_id, value: "a1000000-0000-0000-0000-000000000002"}
+              - column: {name: label,       value: "Communication"}
+        - insert:
+            tableName: category
+            columns:
+              - column: {name: category_id, value: "a1000000-0000-0000-0000-000000000003"}
+              - column: {name: label,       value: "Famille"}
+        - insert:
+            tableName: category
+            columns:
+              - column: {name: category_id, value: "a1000000-0000-0000-0000-000000000004"}
+              - column: {name: label,       value: "Couple"}
+        - insert:
+            tableName: category
+            columns:
+              - column: {name: category_id, value: "a1000000-0000-0000-0000-000000000005"}
+              - column: {name: label,       value: "Amitié"}
+        - insert:
+            tableName: category
+            columns:
+              - column: {name: category_id, value: "a1000000-0000-0000-0000-000000000006"}
+              - column: {name: label,       value: "Travail"}
+        - insert:
+            tableName: category
+            columns:
+              - column: {name: category_id, value: "a1000000-0000-0000-0000-000000000007"}
+              - column: {name: label,       value: "Parentalité"}
+        - insert:
+            tableName: category
+            columns:
+              - column: {name: category_id, value: "a1000000-0000-0000-0000-000000000008"}
+              - column: {name: label,       value: "Gestion des conflits"}
+
+  - changeSet:
+      id: 17-seed-relations
+      author: team-resources-relationnelles
+      comment: "Données de référence — types de relation"
+      changes:
+        - insert:
+            tableName: relation
+            columns:
+              - column: {name: relation_id, value: "b2000000-0000-0000-0000-000000000001"}
+              - column: {name: label,       value: "Famille"}
+        - insert:
+            tableName: relation
+            columns:
+              - column: {name: relation_id, value: "b2000000-0000-0000-0000-000000000002"}
+              - column: {name: label,       value: "Couple"}
+        - insert:
+            tableName: relation
+            columns:
+              - column: {name: relation_id, value: "b2000000-0000-0000-0000-000000000003"}
+              - column: {name: label,       value: "Amis"}
+        - insert:
+            tableName: relation
+            columns:
+              - column: {name: relation_id, value: "b2000000-0000-0000-0000-000000000004"}
+              - column: {name: label,       value: "Collègues"}
+        - insert:
+            tableName: relation
+            columns:
+              - column: {name: relation_id, value: "b2000000-0000-0000-0000-000000000005"}
+              - column: {name: label,       value: "Voisinage"}
+        - insert:
+            tableName: relation
+            columns:
+              - column: {name: relation_id, value: "b2000000-0000-0000-0000-000000000006"}
+              - column: {name: label,       value: "Communauté"}
+
+  - changeSet:
+      id: 99-tag-v0.0.3
+      author: team-resources-relationnelles
+      comment: "Tag version v0.0.3"
+      changes:
+        - tagDatabase:
+            tag: v0.0.3

@@ -1,0 +1,301 @@
+<div class="fr-container fr-py-6w">
+
+  <!-- Fil d'Ariane -->
+  <nav role="navigation" class="fr-breadcrumb fr-mb-4w" aria-label="vous êtes ici :">
+    <button class="fr-breadcrumb__button" aria-expanded="false" aria-controls="breadcrumb-form">
+      Voir le fil d'Ariane
+    </button>
+    <div class="fr-collapse" id="breadcrumb-form">
+      <ol class="fr-breadcrumb__list">
+        <li><a class="fr-breadcrumb__link" routerLink="/">Accueil</a></li>
+        <li><a class="fr-breadcrumb__link" routerLink="/resources">Ressources</a></li>
+        <li><a class="fr-breadcrumb__link" aria-current="page">
+          {{ isEdit ? 'Modifier' : 'Créer une ressource' }}
+        </a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <div class="fr-grid-row fr-grid-row--center">
+    <div class="fr-col-12 fr-col-md-10 fr-col-lg-8">
+
+      <h1 class="fr-h2 fr-mb-4w">
+        {{ isEdit ? 'Modifier la ressource' : 'Créer une ressource' }}
+      </h1>
+
+      <!-- Chargement édition -->
+      @if (loading() && isEdit) {
+        <p class="fr-text--lead">Chargement en cours…</p>
+      }
+
+      <!-- Erreur -->
+      @if (error()) {
+        <div class="fr-alert fr-alert--error fr-mb-4w">
+          <p class="fr-alert__title">Erreur</p>
+          <p>{{ error() }}</p>
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()">
+
+        <!-- ── Champs communs ──────────────────────────── -->
+
+        <div class="fr-input-group" [class.fr-input-group--error]="form.get('resource_title')?.invalid && form.get('resource_title')?.touched">
+          <label class="fr-label" for="resource-title">
+            Titre
+            <span class="fr-hint-text">Obligatoire — 255 caractères max.</span>
+          </label>
+          <input
+            class="fr-input"
+            [class.fr-input--error]="form.get('resource_title')?.invalid && form.get('resource_title')?.touched"
+            formControlName="resource_title"
+            type="text"
+            id="resource-title"
+            autocomplete="off"
+          >
+          @if (form.get('resource_title')?.invalid && form.get('resource_title')?.touched) {
+            <p class="fr-error-text">Le titre est obligatoire.</p>
+          }
+        </div>
+
+        <div class="fr-input-group fr-mt-3w">
+          <label class="fr-label" for="resource-description">Description</label>
+          <textarea
+            class="fr-input"
+            formControlName="resource_description"
+            id="resource-description"
+            rows="4"
+          ></textarea>
+        </div>
+
+        <div class="fr-select-group fr-mt-3w"
+             [class.fr-select-group--error]="form.get('resource_label')?.invalid && form.get('resource_label')?.touched">
+          <label class="fr-label" for="resource-label">
+            Type de ressource
+            <span class="fr-hint-text">Obligatoire</span>
+          </label>
+          <select class="fr-select"
+                  [class.fr-select--error]="form.get('resource_label')?.invalid && form.get('resource_label')?.touched"
+                  formControlName="resource_label" id="resource-label">
+            <option value="">— Choisir un type —</option>
+            @for (opt of labelOptions; track opt[0]) {
+              <option [value]="opt[0]">{{ opt[1] }}</option>
+            }
+          </select>
+          @if (form.get('resource_label')?.invalid && form.get('resource_label')?.touched) {
+            <p class="fr-error-text">Le type de ressource est obligatoire.</p>
+          }
+        </div>
+
+        <!-- Catégories -->
+        @if (categories().length > 0) {
+          <div class="fr-form-group fr-mt-3w">
+            <fieldset class="fr-fieldset"
+                      [class.fr-fieldset--error]="form.get('categories')?.invalid && form.get('categories')?.touched">
+              <legend class="fr-fieldset__legend fr-text--regular">
+                Catégories
+                <span class="fr-hint-text">Obligatoire — au moins une</span>
+              </legend>
+              <div class="fr-fieldset__content">
+                <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+                  @for (cat of categories(); track cat.category_id) {
+                    <button
+                      type="button"
+                      class="fr-tag"
+                      [class.fr-tag--dismiss]="selectedCategories.includes(cat.category_id)"
+                      [attr.aria-pressed]="selectedCategories.includes(cat.category_id)"
+                      (click)="toggleCategory(cat.category_id)"
+                    >{{ cat.label }}</button>
+                  }
+                </div>
+                @if (form.get('categories')?.invalid && form.get('categories')?.touched) {
+                  <p class="fr-error-text fr-mt-1w">Sélectionnez au moins une catégorie.</p>
+                }
+              </div>
+            </fieldset>
+          </div>
+        }
+
+        <!-- Relations -->
+        @if (relations().length > 0) {
+          <div class="fr-form-group fr-mt-3w">
+            <fieldset class="fr-fieldset"
+                      [class.fr-fieldset--error]="form.get('relations')?.invalid && form.get('relations')?.touched">
+              <legend class="fr-fieldset__legend fr-text--regular">
+                Types de relation
+                <span class="fr-hint-text">Obligatoire — au moins un</span>
+              </legend>
+              <div class="fr-fieldset__content">
+                <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+                  @for (rel of relations(); track rel.relation_id) {
+                    <button
+                      type="button"
+                      class="fr-tag"
+                      [class.fr-tag--dismiss]="selectedRelations.includes(rel.relation_id)"
+                      [attr.aria-pressed]="selectedRelations.includes(rel.relation_id)"
+                      (click)="toggleRelation(rel.relation_id)"
+                    >{{ rel.label }}</button>
+                  }
+                </div>
+                @if (form.get('relations')?.invalid && form.get('relations')?.touched) {
+                  <p class="fr-error-text fr-mt-1w">Sélectionnez au moins un type de relation.</p>
+                }
+              </div>
+            </fieldset>
+          </div>
+        }
+
+        <!-- ── Section sous-type conditionnelle ──────── -->
+
+        @switch (selectedLabel) {
+
+          @case ('reading_sheet') {
+            <div class="fr-callout fr-mt-4w">
+              <h2 class="fr-callout__title">Fiche de lecture</h2>
+              <div class="fr-input-group fr-mt-2w">
+                <label class="fr-label" for="book-title">Titre du livre <span class="fr-hint-text">Obligatoire</span></label>
+                <input class="fr-input" formControlName="book_title" type="text" id="book-title">
+              </div>
+              <div class="fr-input-group fr-mt-2w">
+                <label class="fr-label" for="book-author">Auteur du livre</label>
+                <input class="fr-input" formControlName="book_author" type="text" id="book-author">
+              </div>
+              <div class="fr-input-group fr-mt-2w">
+                <label class="fr-label" for="summary">Résumé</label>
+                <textarea class="fr-input" formControlName="summary" id="summary" rows="4"></textarea>
+              </div>
+            </div>
+          }
+
+          @case ('games') {
+            <div class="fr-callout fr-mt-4w">
+              <h2 class="fr-callout__title">Jeu</h2>
+              <div class="fr-input-group fr-mt-2w">
+                <label class="fr-label" for="game-url">URL du jeu</label>
+                <input class="fr-input" formControlName="game_url" type="url" id="game-url">
+              </div>
+              <div class="fr-input-group fr-mt-2w">
+                <label class="fr-label" for="game-platform">Plateforme</label>
+                <input class="fr-input" formControlName="game_platform" type="text" id="game-platform">
+              </div>
+              <div class="fr-input-group fr-mt-2w">
+                <label class="fr-label" for="game-instructions">Instructions</label>
+                <textarea class="fr-input" formControlName="game_instructions" id="game-instructions" rows="4"></textarea>
+              </div>
+            </div>
+          }
+
+          @case ('videos') {
+            <div class="fr-callout fr-mt-4w">
+              <h2 class="fr-callout__title">Vidéo</h2>
+              <div class="fr-input-group fr-mt-2w">
+                <label class="fr-label" for="video-url">URL de la vidéo <span class="fr-hint-text">Obligatoire</span></label>
+                <input class="fr-input" formControlName="video_url" type="url" id="video-url">
+              </div>
+              <div class="fr-input-group fr-mt-2w">
+                <label class="fr-label" for="video-duration">Durée (minutes) <span class="fr-hint-text">Obligatoire</span></label>
+                <input class="fr-input" formControlName="video_duration" type="number" min="0" id="video-duration">
+              </div>
+              <div class="fr-input-group fr-mt-2w">
+                <label class="fr-label" for="video-platform">Plateforme <span class="fr-hint-text">ex. YouTube, Vimeo</span></label>
+                <input class="fr-input" formControlName="video_platform" type="text" id="video-platform">
+              </div>
+            </div>
+          }
+
+          @case ('pdf') {
+            <div class="fr-callout fr-mt-4w">
+              <h2 class="fr-callout__title">Document PDF</h2>
+              <div class="fr-input-group fr-mt-2w">
+                <label class="fr-label" for="pdf-url">URL du PDF <span class="fr-hint-text">Obligatoire</span></label>
+                <input class="fr-input" formControlName="pdf_url" type="url" id="pdf-url">
+              </div>
+              <div class="fr-input-group fr-mt-2w">
+                <label class="fr-label" for="pdf-publisher">Éditeur</label>
+                <input class="fr-input" formControlName="pdf_publisher" type="text" id="pdf-publisher">
+              </div>
+              <div class="fr-input-group fr-mt-2w">
+                <label class="fr-label" for="pdf-pages">Nombre de pages</label>
+                <input class="fr-input" formControlName="pdf_page_count" type="number" min="1" id="pdf-pages">
+              </div>
+            </div>
+          }
+
+          @case ('activity') {
+            <div class="fr-callout fr-mt-4w">
+              <h2 class="fr-callout__title">Activité</h2>
+              <div class="fr-input-group fr-mt-2w">
+                <label class="fr-label" for="activity-duration">Durée (minutes)</label>
+                <input class="fr-input" formControlName="activity_duration" type="number" min="0" id="activity-duration">
+              </div>
+              <div class="fr-input-group fr-mt-2w">
+                <label class="fr-label" for="activity-materials">Matériel nécessaire</label>
+                <textarea class="fr-input" formControlName="activity_required_materials" id="activity-materials" rows="3"></textarea>
+              </div>
+              <div class="fr-input-group fr-mt-2w">
+                <label class="fr-label" for="activity-instructions">Instructions</label>
+                <textarea class="fr-input" formControlName="activity_instructions" id="activity-instructions" rows="4"></textarea>
+              </div>
+            </div>
+          }
+
+          @case ('article') {
+            <div class="fr-callout fr-mt-4w">
+              <h2 class="fr-callout__title">Article</h2>
+              <div class="fr-input-group fr-mt-2w">
+                <label class="fr-label" for="article-url">URL de l'article <span class="fr-hint-text">Obligatoire</span></label>
+                <input class="fr-input" formControlName="article_url" type="url" id="article-url">
+              </div>
+              <div class="fr-input-group fr-mt-2w">
+                <label class="fr-label" for="article-publisher">Source / éditeur</label>
+                <input class="fr-input" formControlName="article_publisher" type="text" id="article-publisher">
+              </div>
+            </div>
+          }
+
+          @case ('challenge_card') {
+            <div class="fr-callout fr-mt-4w">
+              <h2 class="fr-callout__title">Carte défi</h2>
+              <div class="fr-input-group fr-mt-2w">
+                <label class="fr-label" for="challenge-duration">Durée du défi (jours)</label>
+                <input class="fr-input" formControlName="challenge_card_duration" type="number" min="1" id="challenge-duration">
+              </div>
+            </div>
+          }
+
+          @case ('exercise') {
+            <div class="fr-callout fr-mt-4w">
+              <h2 class="fr-callout__title">Exercice</h2>
+              <div class="fr-input-group fr-mt-2w">
+                <label class="fr-label" for="exercise-duration">Durée (minutes)</label>
+                <input class="fr-input" formControlName="exercise_duration" type="number" min="0" id="exercise-duration">
+              </div>
+              <div class="fr-input-group fr-mt-2w">
+                <label class="fr-label" for="exercise-instructions">Instructions</label>
+                <textarea class="fr-input" formControlName="exercise_instructions" id="exercise-instructions" rows="4"></textarea>
+              </div>
+            </div>
+          }
+
+        }
+
+        <!-- ── Actions ────────────────────────────────── -->
+        <div class="fr-btns-group fr-btns-group--inline fr-mt-6w">
+          <button
+            type="submit"
+            class="fr-btn"
+            [disabled]="loading() || form.invalid"
+          >
+            {{ isEdit ? 'Enregistrer les modifications' : 'Créer la ressource' }}
+          </button>
+          <a routerLink="/resources" class="fr-btn fr-btn--secondary">
+            Annuler
+          </a>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+</div>

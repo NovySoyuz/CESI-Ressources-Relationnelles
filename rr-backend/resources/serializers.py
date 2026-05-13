@@ -88,36 +88,38 @@ SUBTYPE_MAP = {
 # Resource
 # ─────────────────────────────────────────────────────────────────────────────
 
+class ResourceAuthorSerializer(serializers.Serializer):
+    user_id    = serializers.UUIDField()
+    user_fname = serializers.CharField(source='user.user_fname')
+    user_lname = serializers.CharField(source='user.user_lname')
+
+
 class ResourceListSerializer(serializers.ModelSerializer):
-    categories = CategorySerializer(many=True, read_only=True)
-    relations = RelationSerializer(many=True, read_only=True)
-    resource_author_id = serializers.UUIDField(
-        source='resource_author.user_id', read_only=True
-    )
+    categories      = CategorySerializer(many=True, read_only=True)
+    relations       = RelationSerializer(many=True, read_only=True)
+    resource_author = ResourceAuthorSerializer(read_only=True)
 
     class Meta:
         model = Resource
         fields = [
             'resource_id', 'resource_title', 'resource_description',
             'resource_label', 'resource_is_visible', 'resource_created_at',
-            'resource_last_modif', 'resource_author_id', 'categories', 'relations',
+            'resource_last_modif', 'resource_author', 'categories', 'relations',
         ]
 
 
 class ResourceDetailSerializer(serializers.ModelSerializer):
-    categories = CategorySerializer(many=True, read_only=True)
-    relations = RelationSerializer(many=True, read_only=True)
-    resource_author_id = serializers.UUIDField(
-        source='resource_author.user_id', read_only=True
-    )
-    detail = serializers.SerializerMethodField()
+    categories      = CategorySerializer(many=True, read_only=True)
+    relations       = RelationSerializer(many=True, read_only=True)
+    resource_author = ResourceAuthorSerializer(read_only=True)
+    detail          = serializers.SerializerMethodField()
 
     class Meta:
         model = Resource
         fields = [
             'resource_id', 'resource_title', 'resource_description',
             'resource_label', 'resource_is_visible', 'resource_created_at',
-            'resource_last_modif', 'resource_author_id', 'categories', 'relations', 'detail',
+            'resource_last_modif', 'resource_author', 'categories', 'relations', 'detail',
         ]
 
     def get_detail(self, obj):
@@ -131,6 +133,14 @@ class ResourceDetailSerializer(serializers.ModelSerializer):
         except Exception:
             return None
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        label = instance.resource_label
+        detail = data.pop('detail', None)
+        if label and detail is not None:
+            data[label] = detail
+        return data
+
 
 class ResourceWriteSerializer(serializers.Serializer):
     resource_title = serializers.CharField(max_length=255)
@@ -138,13 +148,13 @@ class ResourceWriteSerializer(serializers.Serializer):
         required=False, allow_blank=True, allow_null=True
     )
     resource_label = serializers.ChoiceField(
-        choices=[k for k in SUBTYPE_MAP], required=False, allow_null=True
+        choices=[k for k in SUBTYPE_MAP], required=True
     )
     categories = serializers.ListField(
-        child=serializers.UUIDField(), required=False, default=list
+        child=serializers.UUIDField(), required=True, min_length=1
     )
     relations = serializers.ListField(
-        child=serializers.UUIDField(), required=False, default=list
+        child=serializers.UUIDField(), required=True, min_length=1
     )
     detail = serializers.DictField(required=False, default=dict)
 

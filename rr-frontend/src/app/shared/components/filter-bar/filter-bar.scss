@@ -1,0 +1,84 @@
+// Copie exacte des propriétés .fr-select DSFR v1.13
+.filter-dropdown__trigger {
+  display: block;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  border-radius: 0.25rem 0.25rem 0 0;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  padding: 0.5rem 2.5rem 0.5rem 1rem;
+  background-repeat: no-repeat;
+  background-position: calc(100% - 1rem) 50%;
+  background-size: 1rem 1rem;
+  color: var(--text-default-grey);
+  background-color: var(--background-contrast-grey);
+  box-shadow: inset 0 -2px 0 0 var(--border-plain-grey);
+  background-image: url("data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='0 0 24 24'><path fill='%23161616' d='M12,13.1l5-4.9l1.4,1.4L12,15.9L5.6,9.5l1.4-1.4L12,13.1z'/></svg>");
+
+  &:hover { background-color: var(--background-contrast-grey-hover); }
+
+  &[aria-expanded="true"] {
+    background-image: url("data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='0 0 24 24'><path fill='%23161616' d='M12,10.9l-5,4.9L5.6,14.4L12,8.1l6.4,6.4L17,15.8L12,10.9z'/></svg>");
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+}
+
+// Conteneur positionné — ancre du panel absolu
+.filter-dropdown {
+  position: relative;
+}
+
+// Panel flottant — position absolute standard, z-index élevé
+.filter-dropdown__panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  z-index: 9999;
+  background: var(--background-default-grey);
+  border: 1px solid var(--border-default-grey);
+  border-top: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 0.75rem 1rem;
+  max-height: 260px;
+  overflow-y: auto;
+
+  .fr-checkbox-group,
+  .fr-radio-group {
+    margin-bottom: 0.25rem;
+    &:last-child { margin-bottom: 0; }
+  }
+}
+
+// Espacement label → bouton
+.fr-label + .filter-dropdown {
+  margin-top: 0.5rem;
+}
+
+// Badge compteur
+.filter-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.3rem;
+  margin-left: 0.4rem;
+  background: var(--background-action-high-blue-france);
+  color: #fff;
+  border-radius: 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: middle;
+}

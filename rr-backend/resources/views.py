@@ -16,6 +16,7 @@ from .serializers import (
 from users.models import Citizen
 
 _ERR_RESOURCE_NOT_FOUND = 'Ressource introuvable.'
+_ERR_CITIZEN_NOT_FOUND  = 'Citoyen introuvable.'
 _ALLOWED_ORDERINGS = {
     'resource_created_at', '-resource_created_at',
     'resource_title', '-resource_title',
@@ -44,6 +45,24 @@ class ResourceListCreateView(APIView):
         return [IsAuthenticated()]
 
     def get(self, request):
+        if request.query_params.get('author') == 'me':
+            if not request.user.is_authenticated:
+                return Response(
+                    {'error': 'Authentification requise.'},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+            try:
+                citizen = Citizen.objects.get(user_id=request.user.user_id)
+            except Citizen.DoesNotExist:
+                return Response(
+                    {'error': _ERR_CITIZEN_NOT_FOUND},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            qs = Resource.objects.filter(resource_author=citizen).prefetch_related(
+                'categories', 'relations'
+            ).order_by('-resource_created_at')
+            return Response(ResourceListSerializer(qs, many=True).data)
+
         qs = Resource.objects.filter(resource_is_visible=True).prefetch_related(
             'categories', 'relations'
         )
@@ -52,13 +71,13 @@ class ResourceListCreateView(APIView):
         if label:
             qs = qs.filter(resource_label=label)
 
-        category = request.query_params.get('category')
-        if category:
-            qs = qs.filter(categories__category_id=category)
+        categories = request.query_params.getlist('category')
+        if categories:
+            qs = qs.filter(categories__category_id__in=categories)
 
-        relation = request.query_params.get('relation')
-        if relation:
-            qs = qs.filter(relations__relation_id=relation)
+        relations = request.query_params.getlist('relation')
+        if relations:
+            qs = qs.filter(relations__relation_id__in=relations)
 
         search = request.query_params.get('search')
         if search:
@@ -76,10 +95,10 @@ class ResourceListCreateView(APIView):
     @transaction.atomic
     def post(self, request):
         try:
-            citizen = Citizen.objects.get(user_id=request.user.id)
+            citizen = Citizen.objects.get(user_id=request.user.user_id)
         except Citizen.DoesNotExist:
             return Response(
-                {'error': 'Citoyen introuvable.'},
+                {'error': _ERR_CITIZEN_NOT_FOUND},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -154,7 +173,7 @@ class ResourceDetailView(APIView):
                     {'error': _ERR_RESOURCE_NOT_FOUND},
                     status=status.HTTP_404_NOT_FOUND,
                 )
-            if str(resource.resource_author.user_id) != str(request.user.id):
+            if str(resource.resource_author.user_id) != str(request.user.user_id):
                 return Response(
                     {'error': _ERR_RESOURCE_NOT_FOUND},
                     status=status.HTTP_404_NOT_FOUND,
@@ -168,9 +187,13 @@ class ResourceDetailView(APIView):
                 {'error': _ERR_RESOURCE_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        if str(resource.resource_author.user_id) != str(request.user.id):
+        try:
+            citizen = Citizen.objects.get(user_id=request.user.user_id)
+        except Citizen.DoesNotExist:
+            return Response({'error': _ERR_CITIZEN_NOT_FOUND}, status=status.HTTP_403_FORBIDDEN)
+        if not citizen.user_is_modo:
             return Response(
-                {'error': 'Modification non autorisée.'},
+                {'error': 'Modification réservée aux modérateurs.'},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -192,13 +215,33 @@ class ResourceDetailView(APIView):
                 {'error': _ERR_RESOURCE_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        if str(resource.resource_author.user_id) != str(request.user.id):
+        try:
+            citizen = Citizen.objects.get(user_id=request.user.user_id)
+        except Citizen.DoesNotExist:
+            return Response({'error': _ERR_CITIZEN_NOT_FOUND}, status=status.HTTP_403_FORBIDDEN)
+        if not citizen.user_is_modo:
             return Response(
-                {'error': 'Suppression non autorisée.'},
+                {'error': 'Suppression réservée aux modérateurs.'},
                 status=status.HTTP_403_FORBIDDEN,
             )
         resource.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ResourcePendingView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            citizen = Citizen.objects.get(user_id=request.user.user_id)
+        except Citizen.DoesNotExist:
+            return Response({'error': _ERR_CITIZEN_NOT_FOUND}, status=status.HTTP_403_FORBIDDEN)
+        if not citizen.user_is_modo:
+            return Response({'error': 'Réservé aux modérateurs.'}, status=status.HTTP_403_FORBIDDEN)
+        qs = Resource.objects.filter(resource_is_visible=False).prefetch_related(
+            'categories', 'relations'
+        ).order_by('resource_created_at')
+        return Response(ResourceListSerializer(qs, many=True).data)
 
 
 class ResourcePublishView(APIView):
@@ -206,10 +249,10 @@ class ResourcePublishView(APIView):
 
     def patch(self, request, resource_id):
         try:
-            citizen = Citizen.objects.get(user_id=request.user.id)
+            citizen = Citizen.objects.get(user_id=request.user.user_id)
         except Citizen.DoesNotExist:
             return Response(
-                {'error': 'Citoyen introuvable.'},
+                {'error': _ERR_CITIZEN_NOT_FOUND},
                 status=status.HTTP_403_FORBIDDEN,
             )
 

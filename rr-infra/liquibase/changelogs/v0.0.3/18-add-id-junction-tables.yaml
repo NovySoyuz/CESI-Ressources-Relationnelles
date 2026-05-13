@@ -1,0 +1,46 @@
+databaseChangeLog:
+  - changeSet:
+      id: 18a-add-id-resource-category
+      author: team-resources-relationnelles
+      comment: "Ajout colonne id BIGSERIAL sur resource_category pour compatibilité Django ORM"
+      changes:
+        - dropPrimaryKey:
+            tableName: resource_category
+            constraintName: pk_resource_category
+        - addColumn:
+            tableName: resource_category
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: resource_category
+            columnNames: "resource_id, category_id"
+            constraintName: uq_resource_category
+
+  - changeSet:
+      id: 18b-add-id-resource-relation
+      author: team-resources-relationnelles
+      comment: "Ajout colonne id BIGSERIAL sur resource_relation pour compatibilité Django ORM"
+      changes:
+        - dropPrimaryKey:
+            tableName: resource_relation
+            constraintName: pk_resource_relation
+        - addColumn:
+            tableName: resource_relation
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: resource_relation
+            columnNames: "resource_id, relation_id"
+            constraintName: uq_resource_relation

@@ -1,0 +1,272 @@
+/* Styles gérés par le DSFR (CDN dans index.html) — ajustements Angular uniquement */
+
+:host { display: block; }
+
+/* Lien actif nav DSFR */
+.fr-nav__link--active {
+  color: var(--blue-france-sun-113-625) !important;
+  font-weight: 700 !important;
+}
+
+/* Bouton déconnexion dans fr-btns-group */
+.fr-btns-group button.fr-btn {
+  border: none;
+  cursor: pointer;
+}
+
+.tricolor-red   { flex: 1; background: var(--red-rf);  }
+
+/* ── Barre principale ──────────────────────────────────────────────────── */
+.navbar-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0 2rem;
+  height: 64px;
+  background: var(--white);
+  box-shadow: var(--shadow);
+}
+
+/* ── Brand ─────────────────────────────────────────────────────────────── */
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  color: var(--blue-rf);
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  .brand-icon {
+    font-size: 1.5rem;
+  }
+
+  .brand-name {
+    font-size: 1rem;
+    font-family: 'Marianne', sans-serif;
+    font-weight: 400;
+    color: var(--text-dark);
+
+    strong {
+      font-weight: 700;
+      color: var(--blue-rf);
+    }
+  }
+}
+
+/* ── Liens de navigation ───────────────────────────────────────────────── */
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+
+  a {
+    display: block;
+    padding: 0.4rem 0.85rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-dark);
+    transition: background 0.15s, color 0.15s;
+
+    &:hover { background: var(--gray-light); color: var(--blue-rf); }
+    &.active { background: rgba(0, 49, 137, 0.08); color: var(--blue-rf); font-weight: 600; }
+  }
+
+  .modo-link { color: #b45309; }
+  .modo-link:hover { background: #fef3c7; color: #92400e; }
+  .modo-link.active { background: #fef3c7; color: #92400e; }
+}
+
+/* ── Actions droite ────────────────────────────────────────────────────── */
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* ── Boutons ───────────────────────────────────────────────────────────── */
+.btn-outline, .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  border: 2px solid var(--blue-rf);
+  transition: background 0.15s, color 0.15s;
+}
+.btn-outline {
+  background: transparent;
+  color: var(--blue-rf);
+  &:hover { background: rgba(0, 49, 137, 0.06); }
+}
+.btn-primary {
+  background: var(--blue-rf);
+  color: var(--white);
+  &:hover { background: #002270; }
+}
+.btn-danger {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  background: var(--red-rf);
+  color: var(--white);
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  &:hover { background: #b0000c; }
+}
+
+/* ── Avatar ────────────────────────────────────────────────────────────── */
+.avatar-wrapper {
+  position: relative;
+}
+.avatar-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--blue-rf);
+  color: var(--white);
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  &:hover { background: #002270; }
+}
+.avatar-initials { letter-spacing: 0.05em; }
+
+/* ── Dropdown ──────────────────────────────────────────────────────────── */
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 220px;
+  background: var(--white);
+  border: 1px solid var(--gray-mid);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  z-index: 100;
+  overflow: hidden;
+  padding: 0.5rem 0;
+}
+.dropdown-user {
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem 1rem;
+  gap: 0.25rem;
+  strong { font-size: 0.9rem; color: var(--text-dark); }
+  small  { font-size: 0.75rem; color: var(--text-muted); }
+}
+.dropdown-divider {
+  margin: 0;
+  border: none;
+  border-top: 1px solid var(--gray-mid);
+}
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  font-size: 0.875rem;
+  color: var(--text-dark);
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s;
+  &:hover { background: var(--gray-light); }
+
+  &.modo-item { color: #b45309; }
+  &.danger    { color: var(--red-rf); }
+}
+
+/* ── Hamburger ─────────────────────────────────────────────────────────── */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  padding: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: var(--text-dark);
+    border-radius: 2px;
+    transition: 0.2s;
+  }
+}
+
+/* ── Menu mobile ───────────────────────────────────────────────────────── */
+.mobile-menu {
+  display: none;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem;
+  background: var(--white);
+  border-top: 1px solid var(--gray-mid);
+
+  a, button {
+    display: block;
+    padding: 0.65rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    color: var(--text-dark);
+    &:hover { background: var(--gray-light); }
+    &.active { background: rgba(0, 49, 137, 0.08); color: var(--blue-rf); }
+  }
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .navbar-links   { display: none; }
+  .btn-outline, .btn-primary { display: none; }
+  .avatar-wrapper { display: none; }
+  .hamburger      { display: flex; }
+  .mobile-menu    { display: flex; }
+}
+
+/* Le style est entièrement géré par le DSFR (chargé via CDN dans index.html) */
+/* Ajustements mineurs Angular uniquement */
+
+:host {
+  display: block;
+}
+
+/* Lien actif dans la nav DSFR */
+.fr-nav__link--active {
+  color: var(--blue-france-sun-113-625) !important;
+  font-weight: 700 !important;
+}
+
+/* Bouton de déconnexion dans la liste fr-btns-group */
+.fr-btns-group button.fr-btn {
+  border: none;
+  cursor: pointer;
+}
+
+
+
+
+
+

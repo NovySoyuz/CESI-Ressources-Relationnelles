@@ -58,3 +58,9 @@ shell-back: ## Shell Python Django
 
 shell-db: ## Shell psql PostgreSQL
 	docker compose -f docker-compose-root.yml exec postgres psql -U ${POSTGRES_USER} -d ${POSTGRES_DB}
+
+reinstall-front: ## Réinstalle les dépendances npm dans le container frontend (après modif package.json)
+	docker compose -f docker-compose-root.yml exec frontend npm install
+
+restart-front: ## Redémarre le serveur Angular (nécessaire après modif angular.json)
+	docker compose -f docker-compose-root.yml restart frontend
