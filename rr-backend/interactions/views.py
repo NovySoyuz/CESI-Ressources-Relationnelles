@@ -9,6 +9,7 @@ from resources.models import Resource
 from .serializers import InteractionSerializer, CommentSerializer
 
 _INTERACTION_FLAGS = ('is_liked', 'is_favorise', 'is_bookmark', 'is_exploited')
+_ERR_CITIZEN_NOT_FOUND = 'Citoyen introuvable.'
 
 
 class InteractionView(APIView):
@@ -17,14 +18,14 @@ class InteractionView(APIView):
     def get(self, request, resource_id):
         try:
             interaction = Interaction.objects.get(
-                citizen__user_id=request.user.id,
+                citizen__user_id=request.user.user_id,
                 resource__resource_id=resource_id
             )
             serializer = InteractionSerializer(interaction)
             return Response(serializer.data)
         except Interaction.DoesNotExist:
             return Response({
-                'citizen_id': str(request.user.id),
+                'citizen_id': str(request.user.user_id),
                 'resource_id': str(resource_id),
                 'is_liked': False,
                 'is_favorise': False,
@@ -34,10 +35,10 @@ class InteractionView(APIView):
 
     def post(self, request, resource_id):
         try:
-            citizen = Citizen.objects.get(user_id=request.user.id)
+            citizen = Citizen.objects.get(user_id=request.user.user_id)
         except Citizen.DoesNotExist:
             return Response(
-                {'error': 'Citoyen introuvable.'},
+                {'error': _ERR_CITIZEN_NOT_FOUND},
                 status=status.HTTP_403_FORBIDDEN
             )
         try:
@@ -68,7 +69,7 @@ class InteractionFilterView(APIView):
 
     def get(self, request):
         interactions = Interaction.objects.filter(
-            citizen__user_id=request.user.id,
+            citizen__user_id=request.user.user_id,
             **{self.filter_field: True}
         )
         serializer = InteractionSerializer(interactions, many=True)
@@ -92,7 +93,7 @@ class InteractionSummaryView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        base = Interaction.objects.filter(citizen__user_id=request.user.id)
+        base = Interaction.objects.filter(citizen__user_id=request.user.user_id)
         return Response({
             'likes':     base.filter(is_liked=True).count(),
             'favoris':   base.filter(is_favorise=True).count(),
@@ -120,10 +121,10 @@ class CommentListView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         try:
-            citizen = Citizen.objects.get(user_id=request.user.id)
+            citizen = Citizen.objects.get(user_id=request.user.user_id)
         except Citizen.DoesNotExist:
             return Response(
-                {'error': 'Citoyen introuvable.'},
+                {'error': _ERR_CITIZEN_NOT_FOUND},
                 status=status.HTTP_403_FORBIDDEN
             )
         try:
@@ -156,10 +157,42 @@ class CommentDetailView(APIView):
                 {'error': 'Commentaire introuvable.'},
                 status=status.HTTP_404_NOT_FOUND
             )
-        if str(comment.citizen.user_id) != str(request.user.id):
+        if str(comment.citizen.user_id) != str(request.user.user_id):
             return Response(
                 {'error': 'Vous ne pouvez pas supprimer les commentaires des autres utilisateurs.'},
                 status=status.HTTP_403_FORBIDDEN
             )
         comment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CommentReplyView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, comment_id):
+        if not request.data.get('comments_text'):
+            return Response(
+                {'error': 'Le champ comments_text est requis.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            parent = Comment.objects.get(comments_id=comment_id)
+        except Comment.DoesNotExist:
+            return Response(
+                {'error': 'Commentaire introuvable.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        try:
+            citizen = Citizen.objects.get(user_id=request.user.user_id)
+        except Citizen.DoesNotExist:
+            return Response(
+                {'error': _ERR_CITIZEN_NOT_FOUND},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        reply = Comment.objects.create(
+            citizen=citizen,
+            resource=parent.resource,
+            parent=parent,
+            comments_text=request.data['comments_text'],
+        )
+        return Response(CommentSerializer(reply).data, status=status.HTTP_201_CREATED)

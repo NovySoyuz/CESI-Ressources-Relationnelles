@@ -51,6 +51,23 @@ export const routes: Routes = [
         ],
       },
       {
+        path: 'dashboard',
+        canActivate: [authGuard],
+        children: [
+          { path: '', redirectTo: 'interactions', pathMatch: 'full' },
+          {
+            path: 'interactions',
+            loadComponent: () =>
+              import('./features/dashboard/my-interactions/my-interactions.page').then(m => m.MyInteractionsPageComponent),
+          },
+          {
+            path: 'progression',
+            loadComponent: () =>
+              import('./features/dashboard/progression/progression.page').then(m => m.ProgressionPageComponent),
+          },
+        ],
+      },
+      {
         path: 'moderation',
         loadComponent: () =>
           import('./features/moderation/moderation').then(m => m.Moderation),

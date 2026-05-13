@@ -218,10 +218,13 @@
 
         }
 
-        <!-- Zone interactions (Partie 3) -->
-        <div class="rr-placeholder fr-mb-4w">
-          Boutons d'interaction (like, favori, bookmark, exploité) — Partie 3
-        </div>
+        <!-- Boutons d'interaction -->
+        @if (auth.isLogged()) {
+          <app-interaction-buttons
+            [resourceId]="r.resource_id"
+            class="fr-mb-4w"
+          ></app-interaction-buttons>
+        }
 
         <!-- Actions modérateur (modifier + supprimer) -->
         @if (auth.isModo()) {
@@ -238,11 +241,19 @@
 
       </div>
 
-      <!-- Colonne latérale -->
+      <!-- Colonne latérale — Commentaires -->
       <div class="fr-col-12 fr-col-lg-4">
-        <div class="rr-placeholder fr-mb-3w">
-          Commentaires — Partie 3
-        </div>
+        @if (auth.isLogged()) {
+          <app-comment-form
+            [resourceId]="r.resource_id"
+            (submitted)="refreshKey.update(k => k + 1)"
+            class="fr-mb-3w"
+          ></app-comment-form>
+        }
+        <app-comment-list
+          [resourceId]="r.resource_id"
+          [refreshKey]="refreshKey()"
+        ></app-comment-list>
       </div>
 
     </div>

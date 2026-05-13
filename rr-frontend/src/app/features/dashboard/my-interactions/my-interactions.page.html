@@ -1,108 +1,78 @@
-<section class="dashboard-page">
-  <nav class="fr-breadcrumb fr-mb-3w" aria-label="Fil d Ariane">
-    <ol class="fr-breadcrumb__list">
-      <li>
-        <a class="fr-breadcrumb__link" routerLink="/dashboard/progression">Progression</a>
-      </li>
-      <li>
-        <a class="fr-breadcrumb__link" routerLink="/dashboard/interactions" aria-current="page">Mes interactions</a>
-      </li>
-    </ol>
-  </nav>
+<div class="fr-container fr-py-6w">
 
-  <section class="fr-mb-6w" aria-labelledby="my-interactions-title">
-    <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
-      <div class="fr-col-12 fr-col-lg-8">
-        <p class="fr-badge fr-badge--no-icon fr-mb-2w">Tableau de bord usager</p>
-        <h1 id="my-interactions-title" class="fr-h2 fr-mb-2w">Mes interactions</h1>
-        <p class="fr-text--lg fr-mb-0">
-          Les collections actuelles remontent des etats d interaction par ressource et orientent vers la page de test detaillee.
-        </p>
-      </div>
-
-      @if (summary(); as totals) {
-        <div class="fr-col-12 fr-col-lg-4">
-          <div class="fr-callout dashboard-page__callout">
-            <p class="fr-callout__title">Suivi consolide</p>
-            <p class="fr-text--sm">{{ totalTrackedResources() }} ressources suivies dans les differentes collections.</p>
-            <p class="dashboard-page__total fr-mb-2w">{{ totals.total }}</p>
-            <ul class="app-inline-tags">
-              <li><p class="fr-tag">Likes {{ totals.likes }}</p></li>
-              <li><p class="fr-tag">Favoris {{ totals.favorites }}</p></li>
-              <li><p class="fr-tag">Bookmarks {{ totals.bookmarks }}</p></li>
-              <li><p class="fr-tag">Exploitees {{ totals.exploited }}</p></li>
-            </ul>
-          </div>
-        </div>
-      }
+  <div class="fr-grid-row fr-grid-row--middle fr-mb-4w">
+    <div class="fr-col">
+      <h1 class="fr-h2 fr-mb-0">Mes interactions</h1>
     </div>
-  </section>
+  </div>
 
   @if (isLoading()) {
-    <div class="fr-alert fr-alert--info fr-mb-3w" role="status">
-      <p>Chargement des collections d interactions...</p>
-    </div>
+    <p class="fr-text--lead">Chargement en cours…</p>
   }
 
   @if (errorMessage(); as message) {
-    <div class="fr-alert fr-alert--error fr-mb-3w" role="alert">
+    <div class="fr-alert fr-alert--error fr-mb-4w">
+      <p class="fr-alert__title">Erreur</p>
       <p>{{ message }}</p>
     </div>
   }
 
-  <section aria-labelledby="collections-title">
-    <div class="app-section-head">
-      <div>
-        <h2 id="collections-title" class="fr-h4 fr-mb-1w">Collections d interactions</h2>
-        <p class="fr-text--sm fr-mb-0">Chaque bloc permet de rouvrir directement une ressource dans le parcours social.</p>
-      </div>
-    </div>
+  @if (!isLoading() && !errorMessage()) {
 
-    <div class="fr-grid-row fr-grid-row--gutters dashboard-grid">
+    @if (summary(); as totals) {
+      <div class="fr-callout fr-mb-4w">
+        <p class="fr-callout__title">Suivi consolidé</p>
+        <p class="fr-callout__text">{{ totalTrackedResources() }} ressource(s) suivie(s) dans vos collections.</p>
+        <div class="fr-callout__text">
+          <ul class="fr-tags-group">
+            <li><p class="fr-tag">Likes&nbsp;: {{ totals.likes }}</p></li>
+            <li><p class="fr-tag">Favoris&nbsp;: {{ totals.favorites }}</p></li>
+            <li><p class="fr-tag">Bookmarks&nbsp;: {{ totals.bookmarks }}</p></li>
+            <li><p class="fr-tag">Exploitées&nbsp;: {{ totals.exploited }}</p></li>
+          </ul>
+        </div>
+      </div>
+    }
+
+    <div class="fr-grid-row fr-grid-row--gutters">
       @for (section of sections(); track section.collection) {
         <div class="fr-col-12 fr-col-lg-6">
-          <section class="fr-card dashboard-card">
+          <div class="fr-card dashboard-card">
             <div class="fr-card__body">
               <div class="fr-card__content">
-                <div class="dashboard-card__header">
-                  <div>
-                    <h3 class="fr-h5 fr-mb-1w">{{ section.label }}</h3>
+
+                <div class="fr-grid-row fr-grid-row--middle fr-mb-2w">
+                  <div class="fr-col">
+                    <h2 class="fr-h5 fr-mb-1w">{{ section.label }}</h2>
                     <p class="fr-card__desc fr-mb-0">{{ section.intro }}</p>
                   </div>
-                  <p class="fr-badge fr-badge--blue-france fr-badge--no-icon fr-mb-0">{{ section.items.length }}</p>
+                  <div class="fr-col-auto">
+                    <p class="fr-badge fr-badge--blue-france fr-badge--no-icon fr-mb-0">{{ section.items.length }}</p>
+                  </div>
                 </div>
 
                 @if (section.items.length === 0) {
                   <div class="fr-highlight">
-                    <p class="fr-text--sm fr-mb-0">Aucune ressource dans cette collection pour le moment.</p>
+                    <p class="fr-text--sm fr-mb-0">Aucune ressource dans cette collection.</p>
                   </div>
                 } @else {
                   <div class="dashboard-card__list">
                     @for (item of section.items; track item.resourceId) {
-                      <a
-                        class="dashboard-card__item"
-                        [routerLink]="['/resource-social']"
-                        [queryParams]="{ resourceId: item.resourceId }"
-                      >
-                        <div>
-                          <p class="fr-text--sm fr-mb-1w">Ressource</p>
-                          <strong>{{ item.resourceId }}</strong>
-                        </div>
-
-                        <p class="dashboard-card__flags fr-text--sm fr-mb-0">
-                          like={{ item.liked }} · favori={{ item.favorite }} · bookmark={{ item.bookmarked }} · exploitee={{ item.exploited }}
-                        </p>
-
-                        <span class="fr-link">Ouvrir le detail</span>
+                      <a class="dashboard-card__item" [routerLink]="['/resources', item.resourceId]">
+                        <span class="fr-text--sm fr-text--mention">{{ item.resourceId }}</span>
+                        <span class="fr-link fr-icon-arrow-right-line fr-link--icon-right">Voir la ressource</span>
                       </a>
                     }
                   </div>
                 }
+
               </div>
             </div>
-          </section>
+          </div>
         </div>
       }
     </div>
-  </section>
-</section>
+
+  }
+
+</div>

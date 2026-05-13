@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 
 import { ApiService } from '../../../core/services/api.service';
-import { CommentApiResponse, CommentWritePayload, ResourceComment } from '../models/comment.models';
+import { CommentApiResponse, ResourceComment } from '../models/comment.models';
 
 @Injectable({ providedIn: 'root' })
 export class CommentService {
@@ -10,25 +10,25 @@ export class CommentService {
 
   listByResource(resourceId: string): Observable<ResourceComment[]> {
     return this.api
-      .get<CommentApiResponse[]>(`/interactions/comments/${resourceId}/`)
+      .get<CommentApiResponse[]>(`/api/interactions/comments/${resourceId}/`)
       .pipe(map((response) => response.map((comment) => this.normalizeComment(comment))));
   }
 
   create(resourceId: string, commentsText: string): Observable<ResourceComment> {
     return this.api
-      .post<CommentApiResponse, CommentWritePayload>(`/interactions/comments/${resourceId}/`, {
+      .post<CommentApiResponse>(`/api/interactions/comments/${resourceId}/`, {
         comments_text: commentsText,
       })
       .pipe(map((response) => this.normalizeComment(response)));
   }
 
   delete(resourceId: string, commentId: string): Observable<void> {
-    return this.api.delete(`/interactions/comments/${resourceId}/${commentId}/`);
+    return this.api.delete(`/api/interactions/comments/${resourceId}/${commentId}/`);
   }
 
   reply(commentId: string, commentsText: string): Observable<ResourceComment> {
     return this.api
-      .post<CommentApiResponse, CommentWritePayload>(`/comments/${commentId}/reply/`, {
+      .post<CommentApiResponse>(`/api/interactions/comments/${commentId}/reply/`, {
         comments_text: commentsText,
       })
       .pipe(map((response) => this.normalizeComment(response)));

@@ -18,7 +18,7 @@ export class InteractionService {
 
   getResourceState(resourceId: string): Observable<ResourceInteractionState> {
     return this.api
-      .get<InteractionApiResponse>(`/interactions/${resourceId}/`)
+      .get<InteractionApiResponse>(`/api/interactions/${resourceId}/`)
       .pipe(map((response) => this.normalizeState(response)));
   }
 
@@ -32,19 +32,19 @@ export class InteractionService {
 
   updateResourceState(resourceId: string, payload: InteractionWritePayload): Observable<ResourceInteractionState> {
     return this.api
-      .post<InteractionApiResponse, InteractionWritePayload>(`/interactions/${resourceId}/`, payload)
+      .post<InteractionApiResponse>(`/api/interactions/${resourceId}/`, payload)
       .pipe(map((response) => this.normalizeState(response)));
   }
 
   listCollection(collection: InteractionCollection): Observable<ResourceInteractionState[]> {
     return this.api
-      .get<InteractionApiResponse[]>(`/interactions/${collection}/`)
+      .get<InteractionApiResponse[]>(`/api/interactions/${collection}/`)
       .pipe(map((response) => response.map((item) => this.normalizeState(item))));
   }
 
   getSummary(): Observable<InteractionSummary> {
     return this.api
-      .get<InteractionSummaryApiResponse>('/interactions/summary/')
+      .get<InteractionSummaryApiResponse>('/api/interactions/summary/')
       .pipe(
         map((response) => ({
           likes: response.likes,

@@ -5,11 +5,14 @@ import { switchMap } from 'rxjs';
 import { Resource, RESOURCE_LABEL_DISPLAY } from '../../../core/models/resource.model';
 import { ResourceService } from '../services/resource.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { InteractionButtonsComponent } from '../../../shared/components/interaction-buttons/interaction-buttons.component';
+import { CommentListComponent } from '../../comments/comment-list/comment-list.component';
+import { CommentFormComponent } from '../../comments/comment-form/comment-form.component';
 
 @Component({
   selector: 'app-resource-detail',
   standalone: true,
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, InteractionButtonsComponent, CommentListComponent, CommentFormComponent],
   templateUrl: './resource-detail.html',
 })
 export class ResourceDetail implements OnInit {
@@ -18,9 +21,10 @@ export class ResourceDetail implements OnInit {
   private readonly service = inject(ResourceService);
   readonly auth            = inject(AuthService);
 
-  resource = signal<Resource | null>(null);
-  loading  = signal(true);
-  error    = signal<string | null>(null);
+  resource    = signal<Resource | null>(null);
+  loading     = signal(true);
+  error       = signal<string | null>(null);
+  refreshKey  = signal(0);
 
   readonly labelDisplay = RESOURCE_LABEL_DISPLAY;
 
