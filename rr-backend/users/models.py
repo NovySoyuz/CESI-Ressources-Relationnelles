@@ -61,12 +61,15 @@ class User(models.Model):
     @property
     def is_active(self) -> bool:
         """
-        Délègue à citizen.user_is_actived.
-        SimpleJWT appelle cette propriété pour rejeter les tokens
-        de comptes désactivés.
+        Délègue à citizen.user_is_actived pour les citoyens.
+        Pour les admins (sans profil citoyen), retourne True si le profil admin existe.
         """
         try:
             return self.citizen.user_is_actived
+        except Exception:
+            pass
+        try:
+            return self.admin_profile is not None
         except Exception:
             return False
 

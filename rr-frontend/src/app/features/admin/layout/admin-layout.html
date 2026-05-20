@@ -1,0 +1,52 @@
+<div class="admin-layout">
+
+  <nav class="admin-layout__sidebar" aria-label="Navigation administration">
+
+    <div class="admin-layout__brand">
+      <p class="admin-layout__brand-title">Administration</p>
+      <p class="admin-layout__brand-sub">(RE)Sources Relationnelles</p>
+    </div>
+
+    <ul class="admin-layout__nav">
+      <li>
+        <a routerLink="/admin"
+           routerLinkActive="admin-layout__nav-link--active"
+           [routerLinkActiveOptions]="{ exact: true }"
+           class="admin-layout__nav-link fr-icon-dashboard-3-line">
+          Tableau de bord
+        </a>
+      </li>
+      <li>
+        <a routerLink="/admin/resources"
+           routerLinkActive="admin-layout__nav-link--active"
+           class="admin-layout__nav-link fr-icon-article-line">
+          Ressources
+        </a>
+      </li>
+      <li>
+        <a routerLink="/admin/admins"
+           routerLinkActive="admin-layout__nav-link--active"
+           class="admin-layout__nav-link fr-icon-user-settings-line">
+          Administrateurs
+        </a>
+      </li>
+    </ul>
+
+    <div class="admin-layout__footer">
+      <p class="admin-layout__user-name">{{ adminAuth.fullName() }}</p>
+      @if (adminAuth.isSuperAdmin()) {
+        <p class="admin-layout__user-badge">Super admin</p>
+      }
+      <button class="fr-btn fr-btn--tertiary fr-btn--sm fr-btn--icon-left fr-icon-logout-box-r-line admin-layout__logout"
+              (click)="logout()">
+        Déconnexion
+      </button>
+    </div>
+
+  </nav>
+
+  <main class="admin-layout__main">
+    <router-outlet />
+  </main>
+
+</div>

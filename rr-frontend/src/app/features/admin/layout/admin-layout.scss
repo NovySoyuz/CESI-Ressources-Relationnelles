@@ -1,0 +1,113 @@
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+// ── Sidebar ─────────────────────────────────────────────────────────────────
+
+.admin-layout__sidebar {
+  width: 232px;
+  min-width: 232px;
+  background: #1b1b35;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.admin-layout__brand {
+  padding: 1.5rem 1.25rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-layout__brand-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-layout__brand-sub {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+}
+
+// ── Nav links ────────────────────────────────────────────────────────────────
+
+.admin-layout__nav {
+  flex: 1;
+  list-style: none;
+  margin: 0;
+  padding: 1rem 0;
+}
+
+.admin-layout__nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1.25rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: background 120ms, color 120ms;
+
+  &::before {
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+  }
+
+  &--active {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border-left: 3px solid #6a6af4;
+    padding-left: calc(1.25rem - 3px);
+  }
+}
+
+// ── Footer ───────────────────────────────────────────────────────────────────
+
+.admin-layout__footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-layout__user-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 0.25rem;
+}
+
+.admin-layout__user-badge {
+  font-size: 0.6875rem;
+  color: #6a6af4;
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.admin-layout__logout {
+  color: rgba(255, 255, 255, 0.6) !important;
+  padding-left: 0 !important;
+
+  &:hover {
+    color: #fff !important;
+  }
+}
+
+// ── Main content ─────────────────────────────────────────────────────────────
+
+.admin-layout__main {
+  flex: 1;
+  background: var(--background-alt-grey);
+  overflow-y: auto;
+}

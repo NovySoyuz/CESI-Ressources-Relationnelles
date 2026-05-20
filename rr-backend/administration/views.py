@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, BasePermission
 from django.shortcuts import get_object_or_404
 
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -15,6 +15,18 @@ from .serializers import (
     AdminCreateSerializer,
     AdminUpdateSerializer,
 )
+from resources.models import Resource
+from resources.serializers import ResourceListSerializer, ResourceDetailSerializer
+
+
+class IsAdmin(BasePermission):
+    def has_permission(self, request, view):
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and hasattr(request.user, 'admin_profile')
+            and request.user.admin_profile is not None
+        )
 
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
@@ -116,4 +128,42 @@ class AdminDetailView(APIView):
 
     def delete(self, request, admin_id):
         self.get_object(admin_id).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# ── Gestion des ressources (admin) ────────────────────────────────────────────
+
+class AdminResourceListView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        qs = Resource.objects.prefetch_related('categories', 'relations').order_by('-resource_created_at')
+        return Response(ResourceListSerializer(qs, many=True).data)
+
+
+class AdminResourcePendingView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        qs = Resource.objects.filter(resource_is_visible=False).prefetch_related(
+            'categories', 'relations'
+        ).order_by('resource_created_at')
+        return Response(ResourceListSerializer(qs, many=True).data)
+
+
+class AdminResourcePublishView(APIView):
+    permission_classes = [IsAdmin]
+
+    def patch(self, request, resource_id):
+        resource = get_object_or_404(Resource, pk=resource_id)
+        resource.resource_is_visible = not resource.resource_is_visible
+        resource.save()
+        return Response(ResourceDetailSerializer(resource).data)
+
+
+class AdminResourceDeleteView(APIView):
+    permission_classes = [IsAdmin]
+
+    def delete(self, request, resource_id):
+        get_object_or_404(Resource, pk=resource_id).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

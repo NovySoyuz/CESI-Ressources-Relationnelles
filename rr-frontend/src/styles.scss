@@ -68,12 +68,5 @@ ul.fr-grid-row {
   margin-bottom: 0.75rem;
 }
 
-// Zone réservée aux composants des Parties 3/4 (interactions, commentaires)
-// À supprimer une fois les parties intégrées
-.rr-placeholder {
-  padding: 1rem;
-  border: 1px dashed var(--border-default-grey);
-  border-radius: 4px;
-  color: var(--text-mention-grey);
-  font-size: 0.875rem;
-}
+.admin-stat--warning { color: var(--text-default-warning); }
+.admin-stat--success { color: var(--text-default-success); }
