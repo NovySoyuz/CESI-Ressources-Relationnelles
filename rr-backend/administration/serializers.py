@@ -50,6 +50,18 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class UserWithAdminStatusSerializer(serializers.ModelSerializer):
+    is_admin = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ['user_id', 'user_fname', 'user_lname', 'user_mail', 'is_admin']
+        read_only_fields = fields
+
+    def get_is_admin(self, obj) -> bool:
+        return hasattr(obj, 'admin_profile') and obj.admin_profile is not None
+
+
 class AdminListSerializer(serializers.ModelSerializer):
     user_fname = serializers.CharField(source='admin_id.user_fname', read_only=True)
     user_lname = serializers.CharField(source='admin_id.user_lname', read_only=True)

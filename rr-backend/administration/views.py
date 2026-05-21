@@ -14,7 +14,9 @@ from .serializers import (
     AdminDetailSerializer,
     AdminCreateSerializer,
     AdminUpdateSerializer,
+    UserWithAdminStatusSerializer,
 )
+from users.models import User as UserModel
 from resources.models import Resource
 from resources.serializers import ResourceListSerializer, ResourceDetailSerializer
 
@@ -167,3 +169,13 @@ class AdminResourceDeleteView(APIView):
     def delete(self, request, resource_id):
         get_object_or_404(Resource, pk=resource_id).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# ── Liste des utilisateurs ────────────────────────────────────────────────────
+
+class AdminUserListView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        users = UserModel.objects.select_related('admin_profile').order_by('user_lname', 'user_fname')
+        return Response(UserWithAdminStatusSerializer(users, many=True).data)

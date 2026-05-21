@@ -3,12 +3,13 @@ from .models import Interaction, Comment
 
 
 class InteractionSerializer(serializers.ModelSerializer):
-    citizen_id = serializers.UUIDField(source='citizen.user_id', read_only=True)
-    resource_id = serializers.UUIDField(source='resource.resource_id', read_only=True)
+    citizen_id     = serializers.UUIDField(source='citizen.user_id', read_only=True)
+    resource_id    = serializers.UUIDField(source='resource.resource_id', read_only=True)
+    resource_title = serializers.CharField(source='resource.resource_title', read_only=True)
 
     class Meta:
         model = Interaction
-        fields = ['citizen_id', 'resource_id', 'is_liked', 'is_favorise', 'is_bookmark', 'is_exploited']
+        fields = ['citizen_id', 'resource_id', 'resource_title', 'is_liked', 'is_favorise', 'is_bookmark', 'is_exploited']
 
 
 class CommentSerializer(serializers.ModelSerializer):

@@ -4,6 +4,7 @@ from .views import (
     AdminListCreateView, AdminDetailView,
     AdminResourceListView, AdminResourcePendingView,
     AdminResourcePublishView, AdminResourceDeleteView,
+    AdminUserListView,
 )
 
 urlpatterns = [
@@ -16,4 +17,5 @@ urlpatterns = [
     path('resources/pending/',                          AdminResourcePendingView.as_view(),  name='admin-resource-pending'),
     path('resources/<uuid:resource_id>/publish/',       AdminResourcePublishView.as_view(),  name='admin-resource-publish'),
     path('resources/<uuid:resource_id>/',               AdminResourceDeleteView.as_view(),   name='admin-resource-delete'),
+    path('users/',                                      AdminUserListView.as_view(),          name='admin-user-list'),
 ]

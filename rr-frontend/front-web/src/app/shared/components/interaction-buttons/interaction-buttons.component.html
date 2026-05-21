@@ -1,0 +1,26 @@
+@if (errorMessage(); as message) {
+  <div class="fr-alert fr-alert--error fr-alert--sm fr-mb-3w">
+    <p>{{ message }}</p>
+  </div>
+}
+
+<div class="interaction-grid">
+  @for (action of actions; track action.kind) {
+    <button
+      type="button"
+      class="fr-btn fr-btn--icon-left interaction-btn"
+      [ngClass]="[
+        iconClass(action),
+        isActive(action.kind) ? 'interaction-btn--active' : 'fr-btn--secondary',
+        pendingKind() === action.kind ? 'interaction-btn--pending' : ''
+      ]"
+      [disabled]="pendingKind() !== null"
+      (click)="toggle(action.kind)"
+    >
+      {{ action.label }}
+      @if (countFor(action.kind); as count) {
+        <span class="interaction-btn__count">{{ count }}</span>
+      }
+    </button>
+  }
+</div>

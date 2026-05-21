@@ -1,0 +1,9 @@
+/* Styles gérés par le DSFR — ajustements Angular uniquement */
+
+:host { display: block; }
+
+/* Bouton déconnexion dans fr-btns-group */
+.fr-btns-group button.fr-btn {
+  border: none;
+  cursor: pointer;
+}

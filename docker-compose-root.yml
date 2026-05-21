@@ -60,16 +60,37 @@ services:
     networks:
       - rr_network
 
-  # ─── 4. Angular ────────────────────────────────────────────────────────────
-  frontend:
+  # ─── 4. Angular Web ────────────────────────────────────────────────────────
+  frontend-web:
     build:
-      context: ./rr-frontend
+      context: ./rr-frontend/front-web
       dockerfile: Dockerfile
-    container_name: rr_frontend
+    container_name: rr_frontend_web
     ports:
       - "4200:4200"
     volumes:
-      - ./rr-frontend:/app
+      - ./rr-frontend/front-web:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - NG_CLI_ANALYTICS=false
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
+    networks:
+      - rr_network
+
+  # ─── 5. Angular Mobile ─────────────────────────────────────────────────────
+  frontend-mobile:
+    build:
+      context: ./rr-frontend/front-mobile
+      dockerfile: Dockerfile
+    container_name: rr_frontend_mobile
+    ports:
+      - "4201:4200"
+    volumes:
+      - ./rr-frontend/front-mobile:/app
       - /app/node_modules
     environment:
       - NODE_ENV=development

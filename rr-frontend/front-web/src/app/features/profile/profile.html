@@ -1,0 +1,197 @@
+<div class="fr-container fr-py-6w">
+
+  <h1 class="fr-h2 fr-mb-4w">Mon profil</h1>
+
+  @if (loadError()) {
+    <div class="fr-alert fr-alert--error">
+      <p>{{ loadError() }}</p>
+    </div>
+  }
+
+  @if (profile(); as p) {
+
+    <!-- ── Informations du compte ── -->
+    <div class="fr-card fr-card--no-arrow fr-mb-4w">
+      <div class="fr-card__body">
+        <div class="fr-card__content">
+
+          <div class="profile-header fr-mb-3w">
+            <div class="profile-avatar" aria-hidden="true">
+              {{ p.user_fname[0] }}{{ p.user_lname[0] }}
+            </div>
+            <div>
+              <h2 class="fr-h4 fr-mb-0">{{ p.user_fname }} {{ p.user_lname }}</h2>
+              <p class="fr-text--sm fr-text--mention fr-mb-1w">{{ p.user_mail }}</p>
+              <div class="fr-tags-group">
+                @if (p.user_is_modo) {
+                  <p class="fr-tag fr-tag--sm fr-icon-shield-line fr-tag--icon-left">Modérateur</p>
+                }
+                <p class="fr-tag fr-tag--sm">
+                  Membre depuis {{ p.user_created_at | date:'MMMM yyyy' : '' : 'fr' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          @if (editSuccess()) {
+            <div class="fr-alert fr-alert--success fr-alert--sm fr-mb-3w">
+              <p>Profil mis à jour avec succès.</p>
+            </div>
+          }
+
+          <button class="fr-btn fr-btn--secondary fr-btn--icon-left fr-icon-edit-line"
+                  (click)="toggleEdit()">
+            {{ showEditForm() ? 'Annuler' : 'Modifier mes informations' }}
+          </button>
+
+          @if (showEditForm()) {
+            <form [formGroup]="editForm" (ngSubmit)="saveProfile()" class="fr-mt-3w">
+
+              @if (editError()) {
+                <div class="fr-alert fr-alert--error fr-alert--sm fr-mb-3w">
+                  <p>{{ editError() }}</p>
+                </div>
+              }
+
+              <div class="fr-grid-row fr-grid-row--gutters">
+                <div class="fr-col-12 fr-col-md-6">
+                  <div class="fr-input-group"
+                       [class.fr-input-group--error]="editForm.get('user_fname')?.invalid && editForm.get('user_fname')?.touched">
+                    <label class="fr-label" for="fname">Prénom</label>
+                    <input class="fr-input"
+                           [class.fr-input--error]="editForm.get('user_fname')?.invalid && editForm.get('user_fname')?.touched"
+                           formControlName="user_fname" type="text" id="fname" autocomplete="given-name">
+                    @if (editForm.get('user_fname')?.invalid && editForm.get('user_fname')?.touched) {
+                      <p class="fr-error-text">Le prénom est requis.</p>
+                    }
+                  </div>
+                </div>
+                <div class="fr-col-12 fr-col-md-6">
+                  <div class="fr-input-group"
+                       [class.fr-input-group--error]="editForm.get('user_lname')?.invalid && editForm.get('user_lname')?.touched">
+                    <label class="fr-label" for="lname">Nom</label>
+                    <input class="fr-input"
+                           [class.fr-input--error]="editForm.get('user_lname')?.invalid && editForm.get('user_lname')?.touched"
+                           formControlName="user_lname" type="text" id="lname" autocomplete="family-name">
+                    @if (editForm.get('user_lname')?.invalid && editForm.get('user_lname')?.touched) {
+                      <p class="fr-error-text">Le nom est requis.</p>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <div class="fr-btns-group fr-btns-group--inline fr-mt-3w">
+                <button type="submit" class="fr-btn fr-btn--icon-left fr-icon-check-line"
+                        [disabled]="editForm.invalid || editSaving()">
+                  {{ editSaving() ? 'Enregistrement…' : 'Enregistrer' }}
+                </button>
+              </div>
+
+            </form>
+          }
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Changer le mot de passe ── -->
+    <div class="fr-card fr-card--no-arrow fr-mb-4w">
+      <div class="fr-card__body">
+        <div class="fr-card__content">
+          <h2 class="fr-h5 fr-mb-2w">Mot de passe</h2>
+
+          @if (pwdSuccess()) {
+            <div class="fr-alert fr-alert--success fr-alert--sm fr-mb-3w">
+              <p>Mot de passe modifié avec succès.</p>
+            </div>
+          }
+
+          <button class="fr-btn fr-btn--secondary fr-btn--icon-left fr-icon-lock-line"
+                  (click)="togglePwd()">
+            {{ showPwdForm() ? 'Annuler' : 'Changer le mot de passe' }}
+          </button>
+
+          @if (showPwdForm()) {
+            <form [formGroup]="pwdForm" (ngSubmit)="savePassword()" class="fr-mt-3w">
+
+              @if (pwdError()) {
+                <div class="fr-alert fr-alert--error fr-alert--sm fr-mb-3w">
+                  <p>{{ pwdError() }}</p>
+                </div>
+              }
+
+              <div class="fr-input-group fr-mb-3w">
+                <label class="fr-label" for="current-pwd">Mot de passe actuel</label>
+                <input class="fr-input" formControlName="current_password"
+                       type="password" id="current-pwd" autocomplete="current-password">
+              </div>
+
+              <div class="fr-input-group fr-mb-3w"
+                   [class.fr-input-group--error]="pwdForm.get('new_password')?.invalid && pwdForm.get('new_password')?.touched">
+                <label class="fr-label" for="new-pwd">
+                  Nouveau mot de passe
+                  <span class="fr-hint-text">8 caractères minimum</span>
+                </label>
+                <input class="fr-input"
+                       [class.fr-input--error]="pwdForm.get('new_password')?.invalid && pwdForm.get('new_password')?.touched"
+                       formControlName="new_password" type="password" id="new-pwd" autocomplete="new-password">
+                @if (pwdForm.get('new_password')?.invalid && pwdForm.get('new_password')?.touched) {
+                  <p class="fr-error-text">8 caractères minimum requis.</p>
+                }
+              </div>
+
+              <div class="fr-btns-group fr-btns-group--inline">
+                <button type="submit" class="fr-btn fr-btn--icon-left fr-icon-check-line"
+                        [disabled]="pwdForm.invalid || pwdSaving()">
+                  {{ pwdSaving() ? 'Modification…' : 'Confirmer' }}
+                </button>
+              </div>
+
+            </form>
+          }
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Zone danger : suppression de compte ── -->
+    <div class="fr-card fr-card--no-arrow fr-card--shadow profile-danger-card">
+      <div class="fr-card__body">
+        <div class="fr-card__content">
+          <h2 class="fr-h5 fr-mb-1w">Supprimer mon compte</h2>
+          <p class="fr-text--sm fr-mb-3w">
+            Cette action est irréversible. Toutes vos ressources et interactions seront supprimées.
+          </p>
+
+          @if (!deleteConfirm()) {
+            <button class="fr-btn fr-btn--tertiary fr-btn--icon-left fr-icon-delete-line profile-btn-danger"
+                    (click)="deleteConfirm.set(true)">
+              Supprimer mon compte
+            </button>
+          } @else {
+            <div class="fr-callout fr-callout--red-marianne fr-mb-3w">
+              <p class="fr-callout__title">Êtes-vous sûr ?</p>
+              <p class="fr-callout__text">Cette suppression est définitive et irréversible.</p>
+            </div>
+            <ul class="fr-btns-group fr-btns-group--inline">
+              <li>
+                <button class="fr-btn fr-btn--icon-left fr-icon-delete-line profile-btn-danger"
+                        (click)="deleteAccount()">
+                  Oui, supprimer définitivement
+                </button>
+              </li>
+              <li>
+                <button class="fr-btn fr-btn--secondary" (click)="deleteConfirm.set(false)">
+                  Annuler
+                </button>
+              </li>
+            </ul>
+          }
+
+        </div>
+      </div>
+    </div>
+
+  }
+
+</div>

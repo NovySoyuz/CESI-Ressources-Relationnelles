@@ -1,0 +1,44 @@
+.interaction-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.interaction-btn {
+  justify-content: flex-start;
+  white-space: normal;
+  text-align: left;
+  gap: 0.5rem;
+}
+
+.interaction-btn--active {
+  background-color: var(--blue-france-sun-113-625);
+  box-shadow: inset 0 0 0 1px var(--blue-france-sun-113-625);
+  color: #fff;
+}
+
+.interaction-btn--pending {
+  opacity: 0.7;
+}
+
+.interaction-btn__count {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(255 255 255 / 0.25);
+  color: inherit;
+  padding: 0.1rem 0.45rem;
+  border-radius: 9999px;
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+.interaction-btn--active .interaction-btn__count {
+  background: rgba(255 255 255 / 0.25);
+}
+
+@media (max-width: 576px) {
+  .interaction-grid {
+    grid-template-columns: 1fr;
+  }
+}

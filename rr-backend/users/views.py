@@ -186,28 +186,6 @@ class CustomRefreshView(TokenRefreshView):
 # ─────────────────────────────────────────────────────────────────────────────
 
 class LogoutView(APIView):
-    """
-    Déconnexion — révoque les tokens en BDD et blackliste le refresh JWT.
-
-    POST /api/auth/logout/
-    Permission : authentifié (IsAuthenticated)
-
-    Body JSON attendu :
-    {
-        "refresh": "<jwt_refresh_token>"
-    }
-
-    Réponse 204 : déconnexion réussie (No Content)
-    Réponse 400 : refresh token manquant ou invalide
-
-    Après ce call :
-    - citizen.user_token = NULL
-    - citizen.user_refresh_token = NULL
-    - Le refresh token est blacklisté côté SimpleJWT
-    → Toute requête ultérieure avec l'ancien access token sera rejetée
-      par DBValidatedJWTAuthentication (token != celui en BDD = NULL)
-    """
-
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -216,4 +194,73 @@ class LogoutView(APIView):
         except Citizen.DoesNotExist:
             pass
 
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PROFIL
+# ─────────────────────────────────────────────────────────────────────────────
+
+class MeView(APIView):
+    """
+    GET  /api/auth/me/ — profil de l'utilisateur connecté
+    PATCH /api/auth/me/ — modifier prénom, nom et/ou mot de passe
+    DELETE /api/auth/me/ — supprimer le compte
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def _profile_data(self, user):
+        citizen = user.citizen
+        return {
+            'user_id':         str(user.user_id),
+            'user_fname':      user.user_fname,
+            'user_lname':      user.user_lname,
+            'user_mail':       user.user_mail,
+            'user_is_modo':    citizen.user_is_modo,
+            'user_is_actived': citizen.user_is_actived,
+            'user_created_at': citizen.user_created_at,
+        }
+
+    def get(self, request):
+        try:
+            return Response(self._profile_data(request.user))
+        except Citizen.DoesNotExist:
+            return Response({'error': 'Profil citoyen introuvable.'}, status=status.HTTP_403_FORBIDDEN)
+
+    def patch(self, request):
+        user = request.user
+        data = request.data
+
+        if 'user_fname' in data:
+            fname = str(data['user_fname']).strip()
+            if not fname:
+                return Response({'error': 'Le prénom ne peut pas être vide.'}, status=status.HTTP_400_BAD_REQUEST)
+            user.user_fname = fname
+
+        if 'user_lname' in data:
+            lname = str(data['user_lname']).strip()
+            if not lname:
+                return Response({'error': 'Le nom ne peut pas être vide.'}, status=status.HTTP_400_BAD_REQUEST)
+            user.user_lname = lname
+
+        if 'new_password' in data:
+            if not user.check_password(data.get('current_password', '')):
+                return Response({'error': 'Mot de passe actuel incorrect.'}, status=status.HTTP_400_BAD_REQUEST)
+            new_pwd = str(data['new_password'])
+            if len(new_pwd) < 8:
+                return Response({'error': 'Le mot de passe doit contenir au moins 8 caractères.'}, status=status.HTTP_400_BAD_REQUEST)
+            if new_pwd.isdigit():
+                return Response({'error': 'Le mot de passe ne peut pas être uniquement numérique.'}, status=status.HTTP_400_BAD_REQUEST)
+            user.set_password(new_pwd)
+
+        user.save()
+
+        try:
+            return Response(self._profile_data(user))
+        except Citizen.DoesNotExist:
+            return Response({'error': 'Profil citoyen introuvable.'}, status=status.HTTP_403_FORBIDDEN)
+
+    def delete(self, request):
+        request.user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
