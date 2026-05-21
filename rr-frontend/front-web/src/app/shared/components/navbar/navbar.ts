@@ -23,6 +23,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.routerSub = this.router.events.pipe(
       filter(e => e instanceof NavigationStart)
     ).subscribe(() => this.closeDsfrMenu());
+
+    const bridge = (globalThis as any).AndroidBridge;
+    if (bridge) {
+      const h = bridge.getStatusBarHeight();
+      if (h > 0) document.documentElement.style.setProperty('--sat', `${h}px`);
+    }
   }
 
   ngOnDestroy(): void {

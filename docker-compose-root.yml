@@ -81,26 +81,6 @@ services:
     networks:
       - rr_network
 
-  # ─── 5. Angular Mobile ─────────────────────────────────────────────────────
-  frontend-mobile:
-    build:
-      context: ./rr-frontend/front-mobile
-      dockerfile: Dockerfile
-    container_name: rr_frontend_mobile
-    ports:
-      - "4201:4200"
-    volumes:
-      - ./rr-frontend/front-mobile:/app
-      - /app/node_modules
-    environment:
-      - NODE_ENV=development
-      - NG_CLI_ANALYTICS=false
-    stdin_open: true
-    tty: true
-    depends_on:
-      - backend
-    networks:
-      - rr_network
 
 volumes:
   postgres_data:

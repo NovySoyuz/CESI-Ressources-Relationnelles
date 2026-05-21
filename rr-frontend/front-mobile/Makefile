@@ -1,49 +1,64 @@
-.PHONY: help up down logs shell build cap-sync cap-ios cap-android
+.PHONY: help install cap-sync-dev cap-sync cap-ios-dev cap-ios cap-android android-tunnel
 
 GREEN  := \033[0;32m]
 YELLOW := \033[0;33m]
-RED    := \033[0;31m]
 RESET  := \033[0m]
 
 COMPOSE := docker compose -f ../../docker-compose-root.yml --env-file ../../.env
 
 help: ## Affiche cette aide
 	@echo ""
-	@echo "  $(GREEN)front-mobile — Commandes Angular Mobile + Capacitor$(RESET)"
+	@echo "  $(GREEN)rr-frontend/front-mobile — Coquille Capacitor$(RESET)"
+	@echo "  $(GREEN)Source web : front-web | Natif : ios/ android/$(RESET)"
 	@echo ""
-	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##/ { printf "  $(YELLOW)%-18s$(RESET) %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##/ { printf "  $(YELLOW)%-20s$(RESET) %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 	@echo ""
 
-up: ## Démarre le dev mobile sur http://localhost:4201
-	@echo "$(GREEN)→ Démarrage Angular Mobile sur http://localhost:4201...$(RESET)"
-	$(COMPOSE) up -d frontend-mobile
+install: ## Installe les dépendances Capacitor sur le host
+	npm install
 
-down: ## Arrête le frontend mobile
-	$(COMPOSE) stop frontend-mobile
+# ── Dev (localhost:8000) ──────────────────────────────────────────────────────
 
-logs: ## Logs en temps réel
-	$(COMPOSE) logs -f frontend-mobile
+cap-sync-dev: ## Build dev front-web + sync Capacitor
+	@echo "$(GREEN)→ Build Angular (dev)...$(RESET)"
+	$(COMPOSE) exec frontend-web ng build --configuration development
+	@echo "$(GREEN)→ cap sync...$(RESET)"
+	npx cap sync
 
-shell: ## Shell dans le container mobile
-	$(COMPOSE) exec frontend-mobile sh
-
-generate: ## Génère un composant/service (ex: make generate TYPE=component NAME=header)
-	@echo "$(GREEN)→ ng generate $(TYPE) $(NAME)...$(RESET)"
-	$(COMPOSE) exec frontend-mobile ng generate $(TYPE) $(NAME)
-
-build: ## Build de production
-	@echo "$(GREEN)→ Build production mobile...$(RESET)"
-	$(COMPOSE) exec frontend-mobile ng build --configuration production
-
-cap-sync: ## Build prod + sync Capacitor (ios & android)
-	@echo "$(GREEN)→ Build + cap sync...$(RESET)"
-	$(COMPOSE) exec frontend-mobile ng build --configuration production
-	$(COMPOSE) exec frontend-mobile npx cap sync
-
-cap-ios: ## Ouvre le projet iOS dans Xcode
+cap-ios-dev: ## Build dev + pod install + ouvre Xcode
+	@echo "$(GREEN)→ Build Angular (dev)...$(RESET)"
+	$(COMPOSE) exec frontend-web ng build --configuration development
+	@echo "$(GREEN)→ cap sync...$(RESET)"
+	npx cap sync
+	@echo "$(GREEN)→ pod install...$(RESET)"
+	cd $(CURDIR)/ios/App && pod install
 	@echo "$(GREEN)→ Ouverture Xcode...$(RESET)"
 	open $(CURDIR)/ios/App/App.xcworkspace
 
-cap-android: ## Ouvre le projet Android dans Android Studio
-	@echo "$(GREEN)→ Ouverture Android Studio...$(RESET)"
+# ── Prod ──────────────────────────────────────────────────────────────────────
+
+cap-sync: ## Build prod front-web + sync Capacitor
+	@echo "$(GREEN)→ Build Angular (prod)...$(RESET)"
+	$(COMPOSE) exec frontend-web ng build --configuration production
+	@echo "$(GREEN)→ cap sync...$(RESET)"
+	npx cap sync
+
+cap-ios: ## Build prod + pod install + ouvre Xcode
+	@echo "$(GREEN)→ Build Angular (prod)...$(RESET)"
+	$(COMPOSE) exec frontend-web ng build --configuration production
+	@echo "$(GREEN)→ cap sync...$(RESET)"
+	npx cap sync
+	@echo "$(GREEN)→ pod install...$(RESET)"
+	cd $(CURDIR)/ios/App && pod install
+	@echo "$(GREEN)→ Ouverture Xcode...$(RESET)"
+	open $(CURDIR)/ios/App/App.xcworkspace
+
+cap-android: ## Ouvre Android dans Android Studio
 	open -a "Android Studio" $(CURDIR)/android
+
+# ── Tunnel ADB ────────────────────────────────────────────────────────────────
+
+ADB := $(HOME)/Library/Android/sdk/platform-tools/adb
+
+android-tunnel: ## Tunnel ADB : redirige localhost:8000 de l'émulateur → Docker
+	$(ADB) reverse tcp:8000 tcp:8000

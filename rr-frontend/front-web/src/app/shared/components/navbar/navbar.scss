@@ -1,6 +1,15 @@
 /* Styles gérés par le DSFR — ajustements Angular uniquement */
 
-:host { display: block; }
+:host {
+  display: block;
+  background-color: var(--background-default-grey);
+  padding-top: var(--sat, env(safe-area-inset-top, 0px));
+}
+
+/* Modal menu burger */
+.fr-header__menu {
+  padding-top: var(--sat, env(safe-area-inset-top, 0px));
+}
 
 /* Bouton déconnexion dans fr-btns-group */
 .fr-btns-group button.fr-btn {

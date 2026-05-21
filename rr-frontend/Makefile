@@ -1,4 +1,4 @@
-.PHONY: help web-up web-down web-logs web-shell web-build mobile-up mobile-down mobile-logs mobile-shell mobile-build cap-sync cap-ios cap-android
+.PHONY: help web-up web-down web-logs web-shell web-build cap-sync-dev cap-sync cap-ios-dev cap-ios cap-android
 
 GREEN  := \033[0;32m]
 YELLOW := \033[0;33m]
@@ -28,27 +28,18 @@ web-shell: ## Shell container Web
 web-build: ## Build prod Web
 	$(MAKE) -C front-web build
 
-# ── Mobile ────────────────────────────────────────────────────────────────────
+# ── Mobile (Capacitor) ────────────────────────────────────────────────────────
 
-mobile-up: ## Démarre Angular Mobile (port 4201)
-	$(MAKE) -C front-mobile up
+cap-sync-dev: ## Build dev front-web + sync Capacitor
+	$(MAKE) -C front-mobile cap-sync-dev
 
-mobile-down: ## Arrête Angular Mobile
-	$(MAKE) -C front-mobile down
-
-mobile-logs: ## Logs Angular Mobile
-	$(MAKE) -C front-mobile logs
-
-mobile-shell: ## Shell container Mobile
-	$(MAKE) -C front-mobile shell
-
-mobile-build: ## Build prod Mobile
-	$(MAKE) -C front-mobile build
-
-cap-sync: ## Build prod Mobile + sync Capacitor
+cap-sync: ## Build prod front-web + sync Capacitor
 	$(MAKE) -C front-mobile cap-sync
 
-cap-ios: ## Ouvre iOS dans Xcode
+cap-ios-dev: ## Build dev + pod install + ouvre Xcode
+	$(MAKE) -C front-mobile cap-ios-dev
+
+cap-ios: ## Build prod + pod install + ouvre Xcode
 	$(MAKE) -C front-mobile cap-ios
 
 cap-android: ## Ouvre Android dans Android Studio

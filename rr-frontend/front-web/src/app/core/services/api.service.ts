@@ -5,7 +5,10 @@ import { Observable } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class ApiService {
 
-  private readonly baseUrl = 'http://localhost:8000';
+  private readonly baseUrl = (() => {
+    const platform = (globalThis as any)?.Capacitor?.getPlatform?.();
+    return platform === 'android' ? 'http://10.0.2.2:8000' : 'http://localhost:8000';
+  })();
   private readonly http    = inject(HttpClient);
 
   get<T>(path: string): Observable<T> {

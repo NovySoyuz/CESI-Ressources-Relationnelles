@@ -13,7 +13,6 @@
   background-color: var(--background-default-grey);
 }
 
-/* ── Footer ────────────────────────────────────────────────────────────── */
 .layout-footer {
   background: #003189;
   color: #ffffffcc;
@@ -80,6 +79,10 @@
   max-width: 100%;
   font-size: 0.78rem;
   color: #ffffff80;
+}
+
+.fr-footer__bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 @media (max-width: 640px) {
