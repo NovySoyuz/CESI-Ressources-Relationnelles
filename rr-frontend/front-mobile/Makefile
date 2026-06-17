@@ -37,6 +37,12 @@ cap-ios-dev: ## Build dev + pod install + ouvre Xcode
 
 # ── Prod ──────────────────────────────────────────────────────────────────────
 
+cap-sync-device: ## Build dev (IP physique 172.20.10.7) + sync Capacitor
+	@echo "$(GREEN)→ Build Angular (device)...$(RESET)"
+	$(COMPOSE) exec frontend-web ng build --configuration device
+	@echo "$(GREEN)→ cap sync...$(RESET)"
+	npx cap sync
+
 cap-sync: ## Build prod front-web + sync Capacitor
 	@echo "$(GREEN)→ Build Angular (prod)...$(RESET)"
 	$(COMPOSE) exec frontend-web ng build --configuration production

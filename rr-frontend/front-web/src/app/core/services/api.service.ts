@@ -1,13 +1,16 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
 
   private readonly baseUrl = (() => {
     const platform = (globalThis as any)?.Capacitor?.getPlatform?.();
-    return platform === 'android' ? 'http://10.0.2.2:8000' : 'http://localhost:8000';
+    return platform === 'android'
+      ? `http://${environment.androidApiHost}:8000`
+      : 'http://localhost:8000';
   })();
   private readonly http    = inject(HttpClient);
 

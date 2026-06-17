@@ -103,7 +103,16 @@
         } @else {
           <ul class="fr-btns-group">
             <li>
-              <span class="fr-text--sm fr-text--bold">{{ fullName() }}</span>
+              <a class="fr-btn fr-btn--secondary fr-btn--icon-left fr-icon-account-circle-line"
+                 routerLink="/profile">
+                {{ fullName() }}
+              </a>
+            </li>
+            <li>
+              <button class="fr-btn fr-btn--tertiary-no-outline fr-btn--icon-left fr-icon-logout-box-r-line"
+                      (click)="logout()">
+                Déconnexion
+              </button>
             </li>
           </ul>
         }
