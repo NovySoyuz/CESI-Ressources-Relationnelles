@@ -39,6 +39,7 @@ export class CommentService {
       id: response.comments_id,
       authorId: response.citizen_id,
       resourceId: response.resource_id,
+      parentId: response.parent_id ?? null,
       text: response.comments_text,
       createdAt: response.comments_created_at,
     };

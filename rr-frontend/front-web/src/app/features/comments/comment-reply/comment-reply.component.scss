@@ -1,23 +1,9 @@
 .reply-box {
   display: grid;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
-.reply-box__panel {
+.reply-form {
   display: grid;
-  gap: 1rem;
-}
-
-.reply-box__actions {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  align-items: flex-end;
-}
-
-@media (max-width: 640px) {
-  .reply-box__actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
+  gap: 0.75rem;
 }

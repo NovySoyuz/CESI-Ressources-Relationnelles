@@ -1,8 +1,9 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
 import { finalize } from 'rxjs';
 
 import { getErrorMessage } from '../../../core/utils/http-error.util';
+import { AuthService } from '../../../core/services/auth.service';
 import { CommentReplyComponent } from '../comment-reply/comment-reply.component';
 import { ResourceComment } from '../models/comment.models';
 import { CommentService } from '../services/comment.service';
@@ -23,9 +24,15 @@ export class CommentListComponent {
   protected readonly isLoading = signal(false);
   protected readonly deletingCommentId = signal<string | null>(null);
   protected readonly errorMessage = signal<string | null>(null);
-  protected readonly infoMessage = signal<string | null>(null);
+
+  protected readonly rootComments = computed(() =>
+    this.comments().filter((c) => c.parentId === null)
+  );
 
   private readonly commentService = inject(CommentService);
+  private readonly auth = inject(AuthService);
+
+  protected readonly currentUserId = computed(() => this.auth.user()?.user_id ?? null);
 
   constructor() {
     effect((onCleanup) => {
@@ -33,7 +40,6 @@ export class CommentListComponent {
       this.refreshKey();
 
       this.errorMessage.set(null);
-      this.infoMessage.set(null);
 
       if (!resourceId) {
         this.comments.set([]);
@@ -55,15 +61,15 @@ export class CommentListComponent {
     });
   }
 
+  protected repliesFor(parentId: string): ResourceComment[] {
+    return this.comments().filter((c) => c.parentId === parentId);
+  }
+
   protected deleteComment(comment: ResourceComment): void {
     const resourceId = this.resourceId().trim();
-
-    if (!resourceId || this.deletingCommentId() !== null) {
-      return;
-    }
+    if (!resourceId || this.deletingCommentId() !== null) return;
 
     this.errorMessage.set(null);
-    this.infoMessage.set(null);
     this.deletingCommentId.set(comment.id);
 
     this.commentService
@@ -71,8 +77,9 @@ export class CommentListComponent {
       .pipe(finalize(() => this.deletingCommentId.set(null)))
       .subscribe({
         next: () => {
-          this.comments.update((items) => items.filter((item) => item.id !== comment.id));
-          this.infoMessage.set('Commentaire supprime.');
+          this.comments.update((items) =>
+            items.filter((item) => item.id !== comment.id && item.parentId !== comment.id)
+          );
         },
         error: (error: unknown) => {
           this.errorMessage.set(getErrorMessage(error, 'Impossible de supprimer ce commentaire.'));
@@ -81,11 +88,10 @@ export class CommentListComponent {
   }
 
   protected handleReply(comment: ResourceComment): void {
-    this.comments.update((items) => [comment, ...items]);
-    this.infoMessage.set('Reponse ajoutee en liste plate, en attendant le support de thread cote backend.');
+    this.comments.update((items) => [...items, comment]);
   }
 
   protected shortAuthor(authorId: string): string {
-    return authorId.length > 12 ? `${authorId.slice(0, 8)}...${authorId.slice(-4)}` : authorId;
+    return `${authorId.slice(0, 8)}…`;
   }
 }

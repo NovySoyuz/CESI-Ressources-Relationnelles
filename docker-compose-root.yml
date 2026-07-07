@@ -82,9 +82,39 @@ services:
       - rr_network
 
 
+  # ─── 5. SonarQube (qualité + sécurité) ─────────────────────────────────────
+  # Profil "tools" : ne démarre pas avec la stack applicative.
+  #   Démarrer  : docker compose -f docker-compose-root.yml --profile tools up -d sonarqube
+  #   Analyser  : make sonar   (ou la commande scanner ci-dessous)
+  sonarqube:
+    image: sonarqube:community
+    container_name: rr_sonarqube
+    profiles: ["tools"]
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    networks:
+      - rr_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9000/api/system/status | grep -q '\"status\":\"UP\"'"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+
+
 volumes:
   postgres_data:
     name: rr_pgdata
+  sonarqube_data:
+    name: rr_sonarqube_data
+  sonarqube_extensions:
+    name: rr_sonarqube_extensions
+  sonarqube_logs:
+    name: rr_sonarqube_logs
 
 networks:
   rr_network:

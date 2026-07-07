@@ -1,35 +1,35 @@
 <div class="reply-box">
-  <button class="fr-btn fr-btn--secondary fr-btn--sm" type="button" (click)="toggleForm()">
-    {{ isExpanded() ? 'Annuler' : 'Repondre' }}
+  <button
+    class="fr-btn fr-btn--tertiary-no-outline fr-btn--sm fr-btn--icon-left fr-icon-chat-3-line"
+    type="button"
+    (click)="toggleForm()"
+  >
+    {{ isExpanded() ? 'Annuler' : 'Répondre' }}
   </button>
 
   @if (isExpanded()) {
-    <div class="app-panel reply-box__panel">
+    <div class="reply-form">
       @if (errorMessage(); as message) {
-        <div class="fr-alert fr-alert--error">
+        <div class="fr-alert fr-alert--error fr-mb-1w">
           <p>{{ message }}</p>
         </div>
       }
 
       <div class="fr-input-group" [class.fr-input-group--error]="replyControl.invalid && replyControl.touched">
-        <label class="fr-label" for="comment-reply-textarea">
-          Votre reponse
-          <span class="fr-hint-text">Le backend ne publie pas encore cet endpoint dans la version courante.</span>
-        </label>
         <textarea
-          id="comment-reply-textarea"
           class="fr-input"
           [formControl]="replyControl"
-          placeholder="Ajoutez une reponse courte et utile..."
+          placeholder="Votre réponse..."
+          rows="3"
         ></textarea>
+        @if (replyControl.invalid && replyControl.touched) {
+          <p class="fr-error-text">La réponse est requise et limitée à 800 caractères.</p>
+        }
       </div>
 
-      <div class="reply-box__actions">
-        <p class="fr-text--xs fr-mb-0">Le point d entree /api/comments/:id/reply/ n est pas encore present dans le backend courant.</p>
-        <button class="fr-btn fr-btn--sm" type="button" [disabled]="isSubmitting()" (click)="submit()">
-          {{ isSubmitting() ? 'Envoi...' : 'Envoyer' }}
-        </button>
-      </div>
+      <button class="fr-btn fr-btn--sm" type="button" [disabled]="isSubmitting()" (click)="submit()">
+        {{ isSubmitting() ? 'Envoi...' : 'Envoyer' }}
+      </button>
     </div>
   }
 </div>
