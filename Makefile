@@ -90,7 +90,7 @@ sonar: ## Lance l'analyse SonarQube (génère le token automatiquement)
 	if [ -z "$$TOKEN" ]; then \
 		echo "$(RED)✗ Token introuvable. SonarQube est-il démarré (make sonar-up) et SONAR_ADMIN_PASS correct ?$(RESET)"; exit 1; \
 	fi; \
-	docker run --rm --network rr_network \
+	MSYS_NO_PATHCONV=1 docker run --rm --network rr_network \
 		-e SONAR_HOST_URL="http://sonarqube:9000" \
 		-e SONAR_TOKEN="$$TOKEN" \
 		-v "$(CURDIR):/usr/src" \
@@ -125,7 +125,7 @@ COMPOSE_PROD := docker compose -f docker-compose-root.yml -f docker-compose.prod
 
 prod-certs: ## Génère un certificat TLS auto-signé pour nginx (si absent)
 	@mkdir -p rr-infra/nginx/certs
-	@test -f rr-infra/nginx/certs/server.crt || openssl req -x509 -nodes -newkey rsa:2048 \
+	@test -f rr-infra/nginx/certs/server.crt || MSYS_NO_PATHCONV=1 openssl req -x509 -nodes -newkey rsa:2048 \
 		-keyout rr-infra/nginx/certs/server.key -out rr-infra/nginx/certs/server.crt \
 		-days 365 -subj "/CN=localhost"
 	@echo "$(GREEN)✓ Certificat TLS prêt (rr-infra/nginx/certs/)$(RESET)"
@@ -139,8 +139,6 @@ prod-down: ## Arrête la stack prod-like et revient au backend dev
 	docker compose -f docker-compose-root.yml up -d backend
 	@echo "$(YELLOW)✓ Revenu en mode dev (runserver)$(RESET)"
 
-
-
 # ─── DAST — OWASP ZAP ─────────────────────────────────────────────────────────
 # Scanne l'API Django lancée par `make up` (service "backend" sur rr_network).
 # Rapports HTML/JSON déposés dans ./security-reports/.
@@ -151,7 +149,7 @@ ZAP_REPORTS := $(CURDIR)/security-reports
 zap-baseline: ## DAST passif rapide (spider + règles passives) → security-reports/
 	@mkdir -p $(ZAP_REPORTS)
 	@echo "$(GREEN)→ ZAP baseline scan sur $(ZAP_TARGET) ...$(RESET)"
-	-docker run --rm --network rr_network -v "$(ZAP_REPORTS):/zap/wrk:rw" \
+	-MSYS_NO_PATHCONV=1 docker run --rm --network rr_network -v "$(ZAP_REPORTS):/zap/wrk:rw" \
 		$(ZAP_IMAGE) zap-baseline.py -t $(ZAP_TARGET) \
 		-r zap-baseline.html -J zap-baseline.json
 	@echo "$(GREEN)✓ Rapport → security-reports/zap-baseline.html$(RESET)"
@@ -159,7 +157,7 @@ zap-baseline: ## DAST passif rapide (spider + règles passives) → security-rep
 zap-full: ## DAST actif complet (injections, XSS… — intrusif, données jetables)
 	@mkdir -p $(ZAP_REPORTS)
 	@echo "$(YELLOW)→ ZAP FULL scan (actif) sur $(ZAP_TARGET) — sur environnement jetable uniquement$(RESET)"
-	-docker run --rm --network rr_network -v "$(ZAP_REPORTS):/zap/wrk:rw" \
+	-MSYS_NO_PATHCONV=1 docker run --rm --network rr_network -v "$(ZAP_REPORTS):/zap/wrk:rw" \
 		$(ZAP_IMAGE) zap-full-scan.py -t $(ZAP_TARGET) \
 		-r zap-full.html -J zap-full.json
 	@echo "$(GREEN)✓ Rapport → security-reports/zap-full.html$(RESET)"
