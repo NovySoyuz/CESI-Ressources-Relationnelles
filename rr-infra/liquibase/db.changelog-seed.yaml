@@ -1,0 +1,112 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Jeu de données de DÉMO / TEST — NON inclus dans db.changelog-master.yaml.
+# Ne se joue QUE via `make db-seed` (liquibase --changelog-file=db.changelog-seed.yaml
+# --contexts=seed update). Les migrations normales (make up / make migrate) l'ignorent.
+#
+# Mot de passe de TOUS les comptes : Password123!
+#   Citoyens : alice@example.com · bob@example.com · eve@example.com
+#   Modérateur : chloe@example.com
+#   Admin (super) : david@example.com   (endpoint /admin/…)
+# ─────────────────────────────────────────────────────────────────────────────
+databaseChangeLog:
+
+  - changeSet:
+      id: seed-01-users
+      author: seed
+      contextFilter: seed
+      comment: "Comptes de démo (users + citizens + admin)"
+      changes:
+        - sql:
+            splitStatements: false
+            sql: >-
+              INSERT INTO "user" (user_id, user_fname, user_lname, user_mail, user_password) VALUES
+                ('c3000000-0000-0000-0000-000000000001','Alice','Martin','alice@example.com','pbkdf2_sha256$720000$JmZsQK5alwgsjXXxKV0kdk$0nl34nztGvwMpvKllB4j5i60vJK2eiJF1qCFM4CiHhQ='),
+                ('c3000000-0000-0000-0000-000000000002','Bob','Durand','bob@example.com','pbkdf2_sha256$720000$JmZsQK5alwgsjXXxKV0kdk$0nl34nztGvwMpvKllB4j5i60vJK2eiJF1qCFM4CiHhQ='),
+                ('c3000000-0000-0000-0000-000000000003','Chloé','Bernard','chloe@example.com','pbkdf2_sha256$720000$JmZsQK5alwgsjXXxKV0kdk$0nl34nztGvwMpvKllB4j5i60vJK2eiJF1qCFM4CiHhQ='),
+                ('c3000000-0000-0000-0000-000000000004','Eve','Petit','eve@example.com','pbkdf2_sha256$720000$JmZsQK5alwgsjXXxKV0kdk$0nl34nztGvwMpvKllB4j5i60vJK2eiJF1qCFM4CiHhQ='),
+                ('c3000000-0000-0000-0000-0000000000a1','David','Admin','david@example.com','pbkdf2_sha256$720000$JmZsQK5alwgsjXXxKV0kdk$0nl34nztGvwMpvKllB4j5i60vJK2eiJF1qCFM4CiHhQ=');
+
+              INSERT INTO citizen (user_id, user_is_actived, user_is_modo) VALUES
+                ('c3000000-0000-0000-0000-000000000001', true,  false),
+                ('c3000000-0000-0000-0000-000000000002', true,  false),
+                ('c3000000-0000-0000-0000-000000000003', true,  true),
+                ('c3000000-0000-0000-0000-000000000004', true,  false);
+
+              INSERT INTO admin (admin_id, admin_is_super_admin) VALUES
+                ('c3000000-0000-0000-0000-0000000000a1', true);
+
+  - changeSet:
+      id: seed-02-resources
+      author: seed
+      contextFilter: seed
+      comment: "Ressources de démo + sous-types (article / pdf)"
+      changes:
+        - sql:
+            splitStatements: false
+            sql: >-
+              INSERT INTO resource (resource_id, resource_author, resource_created_at, resource_is_visible, resource_title, resource_description, resource_label) VALUES
+                ('d4000000-0000-0000-0000-000000000001','c3000000-0000-0000-0000-000000000001','2026-06-01 09:00:00', true,  'Bien communiquer dans le couple','Techniques d''écoute active et de communication non violente pour renforcer le lien.','article'),
+                ('d4000000-0000-0000-0000-000000000002','c3000000-0000-0000-0000-000000000002','2026-06-05 14:30:00', true,  'Guide de la parentalité positive','Un PDF pratique avec des exemples concrets pour accompagner les enfants au quotidien.','pdf'),
+                ('d4000000-0000-0000-0000-000000000003','c3000000-0000-0000-0000-000000000001','2026-06-10 11:15:00', false, 'Gérer un conflit au travail','Ressource en attente de modération : méthode en 5 étapes.','article'),
+                ('d4000000-0000-0000-0000-000000000004','c3000000-0000-0000-0000-000000000004','2026-06-12 18:45:00', true,  'Raviver une amitié à distance','Idées simples pour entretenir une amitié malgré l''éloignement.', NULL);
+
+              INSERT INTO resource_article (resource_id, article_url, article_publisher) VALUES
+                ('d4000000-0000-0000-0000-000000000001','https://example.com/communication-couple','Revue Relations'),
+                ('d4000000-0000-0000-0000-000000000003','https://example.com/conflit-travail','RH Mag');
+
+              INSERT INTO resource_pdf (resource_id, pdf_url, pdf_publisher, pdf_page_count, pdf_size) VALUES
+                ('d4000000-0000-0000-0000-000000000002','https://example.com/parentalite.pdf','Éditions Famille', 42, 1048576);
+
+  - changeSet:
+      id: seed-03-resource-links
+      author: seed
+      contextFilter: seed
+      comment: "Associations ressource ↔ catégories / relations (données de référence existantes)"
+      changes:
+        - sql:
+            splitStatements: false
+            sql: >-
+              INSERT INTO resource_category (resource_id, category_id) VALUES
+                ('d4000000-0000-0000-0000-000000000001','a1000000-0000-0000-0000-000000000002'),
+                ('d4000000-0000-0000-0000-000000000001','a1000000-0000-0000-0000-000000000004'),
+                ('d4000000-0000-0000-0000-000000000002','a1000000-0000-0000-0000-000000000007'),
+                ('d4000000-0000-0000-0000-000000000002','a1000000-0000-0000-0000-000000000003'),
+                ('d4000000-0000-0000-0000-000000000003','a1000000-0000-0000-0000-000000000006'),
+                ('d4000000-0000-0000-0000-000000000003','a1000000-0000-0000-0000-000000000008'),
+                ('d4000000-0000-0000-0000-000000000004','a1000000-0000-0000-0000-000000000005');
+
+              INSERT INTO resource_relation (resource_id, relation_id) VALUES
+                ('d4000000-0000-0000-0000-000000000001','b2000000-0000-0000-0000-000000000002'),
+                ('d4000000-0000-0000-0000-000000000002','b2000000-0000-0000-0000-000000000001'),
+                ('d4000000-0000-0000-0000-000000000003','b2000000-0000-0000-0000-000000000004'),
+                ('d4000000-0000-0000-0000-000000000004','b2000000-0000-0000-0000-000000000003');
+
+  - changeSet:
+      id: seed-04-interactions
+      author: seed
+      contextFilter: seed
+      comment: "Interactions citoyens ↔ ressources (likes, favoris, bookmarks, exploited)"
+      changes:
+        - sql:
+            splitStatements: false
+            sql: >-
+              INSERT INTO interactions (interaction_id, citizen_id, resource_id, is_liked, is_favorise, is_bookmark, is_exploited) VALUES
+                (gen_random_uuid(),'c3000000-0000-0000-0000-000000000002','d4000000-0000-0000-0000-000000000001', true,  false, true,  false),
+                (gen_random_uuid(),'c3000000-0000-0000-0000-000000000001','d4000000-0000-0000-0000-000000000002', false, true,  false, false),
+                (gen_random_uuid(),'c3000000-0000-0000-0000-000000000004','d4000000-0000-0000-0000-000000000002', false, false, false, true),
+                (gen_random_uuid(),'c3000000-0000-0000-0000-000000000004','d4000000-0000-0000-0000-000000000004', true,  false, false, false),
+                (gen_random_uuid(),'c3000000-0000-0000-0000-000000000003','d4000000-0000-0000-0000-000000000001', false, false, true,  false);
+
+  - changeSet:
+      id: seed-05-comments
+      author: seed
+      contextFilter: seed
+      comment: "Commentaires + une réponse (parent_id)"
+      changes:
+        - sql:
+            splitStatements: false
+            sql: >-
+              INSERT INTO comments (comments_id, citizen_id, resource_id, comments_text, comments_created_at, parent_id) VALUES
+                ('e5000000-0000-0000-0000-000000000001','c3000000-0000-0000-0000-000000000002','d4000000-0000-0000-0000-000000000001','Merci, des conseils vraiment applicables au quotidien !','2026-06-02 10:00:00', NULL),
+                ('e5000000-0000-0000-0000-000000000002','c3000000-0000-0000-0000-000000000001','d4000000-0000-0000-0000-000000000001','Avec plaisir, contente que ça aide :)','2026-06-02 12:30:00','e5000000-0000-0000-0000-000000000001'),
+                ('e5000000-0000-0000-0000-000000000003','c3000000-0000-0000-0000-000000000004','d4000000-0000-0000-0000-000000000002','Les exemples concrets font toute la différence.','2026-06-06 09:20:00', NULL);

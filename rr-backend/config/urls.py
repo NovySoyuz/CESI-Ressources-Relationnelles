@@ -2,11 +2,13 @@ from django.contrib import admin
 from django.urls import path
 from django.http import JsonResponse
 from django.urls import include, path
+from django.views.decorators.http import require_GET
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
 
+@require_GET
 def health(request):
     return JsonResponse({"status": "ok", "message": "API RR opérationnelle"})
 

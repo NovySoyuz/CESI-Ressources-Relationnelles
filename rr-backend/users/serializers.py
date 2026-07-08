@@ -25,7 +25,9 @@ class RegisterSerializer(serializers.Serializer):
         min_length=8,
         write_only=True,    # jamais retourné dans la réponse
     )
-    user_is_modo = serializers.BooleanField(default=False, required=False)
+    # Sécurité : le rôle modérateur n'est JAMAIS accepté depuis le client à
+    # l'inscription (sinon élévation de privilège). Il ne peut être accordé que
+    # via un endpoint admin protégé.
 
     def validate_user_mail(self, value: str) -> str:
         """Vérifie qu'aucun compte n'existe déjà avec cet email."""
@@ -54,7 +56,7 @@ class RegisterSerializer(serializers.Serializer):
         """
         # Extraction du mot de passe avant la création du User
         raw_password = validated_data.pop('password')
-        is_modo      = validated_data.pop('user_is_modo', False)
+        is_modo      = False   # jamais auto-attribué (voir champ retiré ci-dessus)
 
         # Création du User
         user = User(

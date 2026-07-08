@@ -4,19 +4,21 @@ _Date : 2026-07-07 · Périmètre : `rr-backend` (Django/DRF), `rr-frontend` (An
 
 ## Synthèse
 
-| # | Sévérité | Titre | Emplacement |
-|---|----------|-------|-------------|
-| 1 | 🔴 Critique | Élévation de privilège : n'importe quel utilisateur connecté peut se rendre admin/super-admin | `administration/views.py:94` |
-| 2 | 🔴 Critique | Vol de session admin : les tokens JWT admin sont exposés par l'API à tout utilisateur connecté | `administration/views.py:113` + `serializers.py:89` |
-| 3 | 🟠 Élevé | Élévation de privilège à l'inscription : `user_is_modo` accepté depuis le client | `users/serializers.py:28,57,71` |
-| 4 | 🟠 Élevé | `DEBUG = True` en dur | `config/settings.py:9` |
-| 5 | 🟠 Élevé | `ALLOWED_HOSTS = ['*']` | `config/settings.py:11` |
-| 6 | 🟠 Élevé | Tokens JWT stockés en clair en base | `users/models.py:115`, `administration/models.py:23` |
-| 7 | 🟡 Moyen | Aucun throttling → brute-force & énumération de comptes | `config/settings.py` (REST_FRAMEWORK) |
-| 8 | 🟡 Moyen | En-têtes de sécurité prod absents (HSTS, cookies secure, SSL redirect) | `config/settings.py` |
-| 9 | 🟡 Moyen | Politique de mot de passe faible et incohérente | `users/serializers.py:38`, `users/views.py:247` |
-| 10 | 🟢 Faible | Tokens stockés dans `localStorage` (exposés au XSS) | `auth.service.ts:38` |
-| 11 | 🟢 Faible | Secrets de dev committés / `db.sqlite3` présent | `.env`, `rr-backend/db.sqlite3` |
+| # | Sévérité | Titre | Emplacement | Statut |
+|---|----------|-------|-------------|--------|
+| 1 | 🔴 Critique | Élévation de privilège : n'importe quel utilisateur connecté peut se rendre admin/super-admin | `administration/views.py:94` | ✅ Corrigé (2026-07-08) |
+| 2 | 🔴 Critique | Vol de session admin : les tokens JWT admin sont exposés par l'API à tout utilisateur connecté | `administration/views.py:113` + `serializers.py:89` | ✅ Corrigé (2026-07-08) |
+| 3 | 🟠 Élevé | Élévation de privilège à l'inscription : `user_is_modo` accepté depuis le client | `users/serializers.py:28,57,71` | ✅ Corrigé (2026-07-08) |
+| 4 | 🟠 Élevé | `DEBUG = True` en dur | `config/settings.py:9` | ⏳ À faire |
+| 5 | 🟠 Élevé | `ALLOWED_HOSTS = ['*']` | `config/settings.py:11` | ⏳ À faire |
+| 6 | 🟠 Élevé | Tokens JWT stockés en clair en base | `users/models.py:115`, `administration/models.py:23` | ⏳ À faire |
+| 7 | 🟡 Moyen | Aucun throttling → brute-force & énumération de comptes | `config/settings.py` (REST_FRAMEWORK) | ✅ Throttling corrigé · énum. mitigée (2026-07-08) |
+| 8 | 🟡 Moyen | En-têtes de sécurité prod absents (HSTS, cookies secure, SSL redirect) | `config/settings.py` | ✅ Corrigé (2026-07-08) |
+| 9 | 🟡 Moyen | Politique de mot de passe faible et incohérente | `users/serializers.py:38`, `users/views.py:247` | ⏳ À faire |
+| 10 | 🟢 Faible | Tokens stockés dans `localStorage` (exposés au XSS) | `auth.service.ts:38` | ⏳ À faire |
+| 11 | 🟢 Faible | Secrets de dev committés / `db.sqlite3` présent | `.env`, `rr-backend/db.sqlite3` | ⏳ À faire |
+
+> **Validation dynamique :** findings #1, #2, #3 exploités puis corrigés et re-testés — voir [PENTEST-REPORT.md](PENTEST-REPORT.md) (PT-01 à PT-04).
 
 ---
 
@@ -33,7 +35,7 @@ class AdminListCreateView(APIView):
 
 **Impact :** tout citoyen authentifié peut appeler `POST /admin/admins/` avec son propre `user_id` et `admin_is_super_admin: true` → il devient **super-administrateur**. `AdminCreateSerializer` ne vérifie que l'existence de l'utilisateur, jamais que l'appelant est admin. Le `GET` liste également tous les admins.
 
-**Correctif :** `permission_classes = [IsAdmin]` (voire un contrôle super-admin explicite pour la création).
+**Correctif :** `permission_classes = [IsAdmin]` (voire un contrôle super-admin explicite pour la création). — **✅ Fait (2026-07-08)**, re-testé HTTP 403.
 
 ## 2. 🔴 Vol de tokens admin — `AdminDetailView` + `AdminDetailSerializer`
 
@@ -49,7 +51,7 @@ class AdminDetailSerializer(...):
 
 **Impact :** tout utilisateur connecté peut faire `GET /admin/admins/<id>/` et récupérer les **JWT access/refresh d'un admin** → prise de contrôle complète du compte admin. Il peut aussi `PATCH` (basculer super-admin) ou `DELETE` n'importe quel admin.
 
-**Correctif :** passer la vue en `[IsAdmin]` **et** retirer `admin_token` / `admin_refresh_token` du serializer (aucune raison de les renvoyer par l'API).
+**Correctif :** passer la vue en `[IsAdmin]` **et** retirer `admin_token` / `admin_refresh_token` du serializer (aucune raison de les renvoyer par l'API). — **✅ Fait (2026-07-08)**, re-testé HTTP 403 + tokens absents.
 
 ## 3. 🟠 Auto-attribution du rôle modérateur à l'inscription
 
@@ -63,7 +65,7 @@ Citizen.objects.create(user=user, user_is_modo=is_modo, ...)
 
 **Impact :** `POST /api/auth/register/` avec `"user_is_modo": true` crée un compte **modérateur**. Or un modérateur peut modifier/supprimer/publier n'importe quelle ressource (`resources/views.py:194,222,259`). Modération auto-attribuée = prise de contrôle du contenu.
 
-**Correctif :** ignorer `user_is_modo` côté inscription (forcer `False`) ; n'accorder ce rôle que via un endpoint admin protégé.
+**Correctif :** ignorer `user_is_modo` côté inscription (forcer `False`) ; n'accorder ce rôle que via un endpoint admin protégé. — **✅ Fait (2026-07-08)**, re-testé modo=false.
 
 ## 4. 🟠 `DEBUG = True` en dur — `config/settings.py:9`
 
@@ -83,11 +85,13 @@ Autorise toute valeur d'en-tête `Host` (Host header injection, empoisonnement d
 
 `config/settings.py:67` — aucun `DEFAULT_THROTTLE_CLASSES`. Login/register/refresh sont sans limite de débit → brute-force de mots de passe. De plus `validate_user_mail` renvoie « Un compte existe déjà » → **énumération d'emails**.
 
-**Correctif :** activer `AnonRateThrottle`/`ScopedRateThrottle` sur les endpoints d'auth ; message d'inscription générique.
+**Correctif :** activer `AnonRateThrottle`/`ScopedRateThrottle` sur les endpoints d'auth ; message d'inscription générique. — **✅ Throttling fait (2026-07-08)** (`login 5/min`, `register 10/hour`, re-testé 429). Énumération register mitigée par le throttle ; fix total = vérification email (hors périmètre). En prod : throttling par-IP nécessite `X-Forwarded-For`/`NUM_PROXIES`. → **Fait :** cache **Redis** partagé (`django-redis`) + `NUM_PROXIES=1` en prod → limite exacte et globale entre workers gunicorn (validé en prod-like : 429 déterministe à 5/min).
 
 ## 8. 🟡 En-têtes de sécurité production manquants
 
 `SecurityMiddleware` est présent mais non configuré. Absents : `SECURE_SSL_REDIRECT`, `SECURE_HSTS_SECONDS`, `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`, `SECURE_PROXY_SSL_HEADER`, `SECURE_CONTENT_TYPE_NOSNIFF`. **Correctif :** ajouter ces réglages, conditionnés par un flag prod.
+
+> **✅ Fait (2026-07-08) :** `SECURE_CONTENT_TYPE_NOSNIFF`, `SECURE_REFERRER_POLICY`, `X_FRAME_OPTIONS` toujours actifs ; `SECURE_SSL_REDIRECT`/HSTS/cookies secure/`SECURE_PROXY_SSL_HEADER` conditionnés à `DJANGO_ENV=production`. Nouveau `SecurityHeadersMiddleware` (`config/middleware.py`) : CSP complète (`default-src 'none'` + base-uri/form-action/frame-ancestors), `Permissions-Policy`, `Cross-Origin-Resource-Policy`, `Cache-Control: no-store`, masquage de `Server`. **ZAP re-testé : 5 WARN → 0** (reste 1 note informative « Non-Storable Content »).
 
 ## 9. 🟡 Politique de mot de passe faible et incohérente
 

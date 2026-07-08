@@ -35,6 +35,7 @@ class IsAdmin(BasePermission):
 
 class AdminLoginView(APIView):
     permission_classes = [AllowAny]
+    throttle_scope = 'login'
 
     def post(self, request):
         serializer = AdminLoginSerializer(
@@ -92,7 +93,7 @@ class AdminLogoutView(APIView):
 # ── CRUD ──────────────────────────────────────────────────────────────────────
 
 class AdminListCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdmin]
 
     def get(self, request):
         admins = Admin.objects.select_related('admin_id').all()
@@ -111,7 +112,7 @@ class AdminListCreateView(APIView):
 
 
 class AdminDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdmin]
 
     def get_object(self, admin_id):
         return get_object_or_404(Admin.objects.select_related('admin_id'), pk=admin_id)

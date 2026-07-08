@@ -86,9 +86,8 @@ class AdminDetailSerializer(serializers.ModelSerializer):
         fields = [
             'admin_id', 'user', 'is_active',
             'admin_is_super_admin', 'admin_created_at',
-            'admin_token', 'admin_refresh_token',
         ]
-        read_only_fields = ['admin_id', 'admin_created_at', 'admin_token', 'admin_refresh_token']
+        read_only_fields = ['admin_id', 'admin_created_at']
 
 
 class AdminCreateSerializer(serializers.ModelSerializer):

@@ -6,9 +6,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 
-DEBUG = True
+# #4 — DEBUG piloté par l'environnement (False par défaut = sûr).
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['*']
+# #5 — Liste blanche d'hôtes depuis l'environnement.
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
@@ -27,6 +29,7 @@ AUTH_USER_MODEL = 'users.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'config.middleware.SecurityHeadersMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -56,6 +59,14 @@ DATABASES = {
     )
 }
 
+# Cache Redis — backend du throttling DRF, partagé entre workers/instances.
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': os.getenv('REDIS_URL', 'redis://redis:6379/1'),
+    }
+}
+
 LANGUAGE_CODE = 'fr-fr'
 TIME_ZONE = 'Europe/Paris'
 USE_I18N = True
@@ -71,6 +82,16 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    # Anti brute-force : ScopedRateThrottle ne limite QUE les vues qui
+    # déclarent un `throttle_scope` (login/register). Les autres vues ne sont
+    # pas affectées. Limite par IP pour les requêtes anonymes.
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.ScopedRateThrottle',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'login':    '5/min',
+        'register': '10/hour',
+    },
 }
 
 # JWT
@@ -85,3 +106,23 @@ SIMPLE_JWT = {
 
 # CORS
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:4200').split(',')
+
+# ── Sécurité HTTP ────────────────────────────────────────────────────────────
+# Toujours actifs (dev + prod)
+SECURE_CONTENT_TYPE_NOSNIFF = True          # X-Content-Type-Options: nosniff
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+X_FRAME_OPTIONS = 'DENY'
+
+# Actifs uniquement en production (derrière HTTPS) — évite de casser le dev en HTTP.
+PRODUCTION = os.getenv('DJANGO_ENV', 'dev') == 'production'
+if PRODUCTION:
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000          # 1 an
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    # Derrière un reverse-proxy qui termine le TLS :
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    # Throttling par IP réelle du client (via X-Forwarded-For posé par nginx).
+    REST_FRAMEWORK['NUM_PROXIES'] = 1

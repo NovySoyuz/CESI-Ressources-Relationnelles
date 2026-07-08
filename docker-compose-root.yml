@@ -21,6 +21,21 @@ services:
       timeout: 5s
       retries: 10
 
+  # ─── 1bis. Cache Redis (throttling partagé entre workers) ──────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: rr_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - rr_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   # ─── 2. Migrations Liquibase ───────────────────────────────────────────────
   liquibase:
     image: liquibase/liquibase:4.27
@@ -57,6 +72,8 @@ services:
         condition: service_healthy
       liquibase:
         condition: service_completed_successfully
+      redis:
+        condition: service_healthy
     networks:
       - rr_network
 
