@@ -1,11 +1,12 @@
 # Override « prod-like » — à combiner avec docker-compose-root.yml :
 #   docker compose -f docker-compose-root.yml -f docker-compose.prod.yml up -d --build backend nginx
-# (ou `make prod-up`).
+# (ou `make prod`).
 #
 # Différences avec le dev :
 #   - backend servi par gunicorn (plus runserver)
-#   - DEBUG=False, DJANGO_ENV=production, ALLOWED_HOSTS restreint
-#   - nginx termine le TLS (cert auto-signé) devant le backend
+#   - DEBUG=False, DJANGO_ENV=production, ALLOWED_HOSTS restreint (+ IP LAN)
+#   - nginx sert l'app complète : build Angular sur /, proxy /api/ vers gunicorn,
+#     termine le TLS (cert auto-signé). Front et API sur la même origine.
 services:
 
   backend:
@@ -13,10 +14,13 @@ services:
     environment:
       - DJANGO_ENV=production
       - DEBUG=False
-      - ALLOWED_HOSTS=localhost,127.0.0.1,backend,nginx
+      # ${HOST_IP} est fourni par `make prod` (fallback 127.0.0.1 si lancé à la main).
+      - ALLOWED_HOSTS=localhost,127.0.0.1,backend,nginx,${HOST_IP:-127.0.0.1}
 
   nginx:
-    image: nginx:alpine
+    build:
+      context: .
+      dockerfile: rr-infra/nginx/Dockerfile
     container_name: rr_nginx
     depends_on:
       - backend
@@ -24,7 +28,6 @@ services:
       - "8080:80"
       - "8443:443"
     volumes:
-      - ./rr-infra/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./rr-infra/nginx/certs:/etc/nginx/certs:ro
     networks:
       - rr_network

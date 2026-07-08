@@ -1,0 +1,12 @@
+# Override « accès réseau local » — à combiner avec docker-compose-root.yml.
+# Injecte l'IP LAN du Mac (variable HOST_IP, posée automatiquement par `make lan`)
+# dans les hôtes autorisés Django et les origines CORS, pour héberger toute
+# l'app sur l'IP plutôt que sur localhost.
+#   make lan
+services:
+
+  backend:
+    environment:
+      # ${HOST_IP} est fourni par `make lan` (fallback 127.0.0.1 si lancé à la main).
+      - ALLOWED_HOSTS=localhost,127.0.0.1,backend,nginx,${HOST_IP:-127.0.0.1}
+      - CORS_ALLOWED_ORIGINS=http://localhost:4200,http://localhost:4201,capacitor://localhost,http://${HOST_IP:-127.0.0.1}:4200,http://${HOST_IP:-127.0.0.1}:8000
