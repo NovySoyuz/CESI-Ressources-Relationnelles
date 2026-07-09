@@ -7,3 +7,6 @@ python-dotenv==1.0.1
 dj-database-url==2.1.0
 gunicorn==22.0.0
 django-redis==5.4.0
+
+# Tests / couverture (rapport consommé par SonarQube)
+coverage==7.6.1
