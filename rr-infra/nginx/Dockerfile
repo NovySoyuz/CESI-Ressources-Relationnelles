@@ -16,5 +16,9 @@ FROM nginx:alpine
 RUN apk add --no-cache openssl
 COPY rr-infra/nginx/nginx.prod.conf /etc/nginx/conf.d/default.conf
 COPY rr-infra/nginx/10-gen-cert.sh /docker-entrypoint.d/10-gen-cert.sh
-RUN chmod +x /docker-entrypoint.d/10-gen-cert.sh
+# Normalise en LF (robuste même si le script a été cloné en CRLF sous Windows,
+# sinon "#!/bin/sh\r" → "not found" au démarrage) puis rend exécutable.
+RUN tr -d '\r' < /docker-entrypoint.d/10-gen-cert.sh > /tmp/10-gen-cert.sh \
+    && mv /tmp/10-gen-cert.sh /docker-entrypoint.d/10-gen-cert.sh \
+    && chmod +x /docker-entrypoint.d/10-gen-cert.sh
 COPY --from=build /app/dist/rr-frontend/browser/ /usr/share/nginx/html/

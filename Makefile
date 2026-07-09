@@ -18,9 +18,16 @@ COMPOSE_LAN  := docker compose -f docker-compose-root.yml -f docker-compose.lan.
 COMPOSE_PROD := docker compose -f docker-compose-root.yml -f docker-compose.prod.yml
 
 # ─── Réseau local ─────────────────────────────────────────────────────────────
-# IP LAN active (Wi-Fi en0, puis Ethernet/USB en1 en secours). Injectée dans les
-# ALLOWED_HOSTS/CORS Django par les stacks lan & prod.
-HOST_IP := $(shell ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null)
+# IP LAN active de l'hôte, injectée dans les ALLOWED_HOSTS/CORS Django + le SAN
+# du cert par les stacks lan & prod. Détection selon l'OS :
+#   - Windows (Git Bash) : PowerShell, IP de l'interface avec passerelle par défaut
+#   - macOS             : ipconfig getifaddr (Wi-Fi en0, puis Ethernet/USB en1)
+#   - Linux             : hostname -I (1re IP)
+ifeq ($(OS),Windows_NT)
+HOST_IP := $(shell powershell -NoProfile -Command "(Get-NetIPConfiguration | Where-Object { $$_.IPv4DefaultGateway -ne $$null -and $$_.NetAdapter.Status -eq 'Up' } | Select-Object -First 1).IPv4Address.IPAddress")
+else
+HOST_IP := $(shell ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || hostname -I 2>/dev/null | awk '{print $$1}')
+endif
 
 # ─── SonarQube ────────────────────────────────────────────────────────────────
 # Mot de passe admin (surchargeable : make sonar SONAR_ADMIN_PASS=...)
