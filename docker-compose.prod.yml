@@ -6,7 +6,9 @@
 #   - backend servi par gunicorn (plus runserver)
 #   - DEBUG=False, DJANGO_ENV=production, ALLOWED_HOSTS restreint (+ IP LAN)
 #   - nginx sert l'app complète : build Angular sur /, proxy /api/ vers gunicorn,
-#     termine le TLS (cert auto-signé). Front et API sur la même origine.
+#     termine le TLS. Front et API sur la même origine.
+#   - le cert auto-signé est généré DANS le conteneur nginx au démarrage
+#     (script docker-entrypoint.d, SAN = localhost + IP LAN), persisté en volume.
 services:
 
   backend:
@@ -24,10 +26,17 @@ services:
     container_name: rr_nginx
     depends_on:
       - backend
+    environment:
+      # Injectée dans le SAN du cert auto-signé (fallback 127.0.0.1 si lancé à la main).
+      - HOST_IP=${HOST_IP:-127.0.0.1}
     ports:
       - "8080:80"
       - "8443:443"
     volumes:
-      - ./rr-infra/nginx/certs:/etc/nginx/certs:ro
+      - nginx_certs:/etc/nginx/certs
     networks:
       - rr_network
+
+volumes:
+  nginx_certs:
+    name: rr_nginx_certs

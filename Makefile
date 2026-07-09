@@ -1,5 +1,5 @@
 .PHONY: help \
-        dev lan lan-down prod prod-certs prod-up prod-down \
+        dev lan lan-down prod prod-up prod-down \
         up down destroy status logs logs-db logs-back logs-front \
         shell-back shell-db migrate reinstall-front restart-front \
         db-reset db-seed db-rebuild \
@@ -7,10 +7,10 @@
         zap-baseline zap-full zap
 
 # ─── Couleurs ─────────────────────────────────────────────────────────────────
-GREEN  := \033[0;32m
-YELLOW := \033[0;33m
-RED    := \033[0;31m
-RESET  := \033[0m
+GREEN  := \033[0;32m]
+YELLOW := \033[0;33m]
+RED    := \033[0;31m]
+RESET  := \033[0m]
 
 # ─── Compose (stacks) ─────────────────────────────────────────────────────────
 COMPOSE      := docker compose -f docker-compose-root.yml
@@ -60,19 +60,12 @@ lan-down: ## Arrête la stack LAN (conserve les volumes)
 	$(COMPOSE_LAN) down
 	@echo "$(YELLOW)✓ Stack LAN arrêtée$(RESET)"
 
-prod: prod-certs ## PROD-like — nginx sert front + API, gunicorn, TLS, DEBUG=False
+prod: ## PROD-like — nginx sert front + API, gunicorn, TLS, DEBUG=False
 	HOST_IP=$(HOST_IP) $(COMPOSE_PROD) up -d --build backend nginx
-	@echo "$(GREEN)✓ PROD-like démarré (cert auto-signé · gunicorn · DEBUG=False) :$(RESET)"
+	@echo "$(GREEN)✓ PROD-like démarré (cert auto-signé généré dans nginx · gunicorn · DEBUG=False) :$(RESET)"
 	@echo "$(GREEN)  → App (local) : https://localhost:8443$(RESET)"
 	@echo "$(GREEN)  → App (LAN)   : https://$(HOST_IP):8443$(RESET)"
 	@echo "$(YELLOW)  (front + API servis par nginx sur la même origine)$(RESET)"
-
-prod-certs: ## Génère un certificat TLS auto-signé pour nginx (si absent)
-	@mkdir -p rr-infra/nginx/certs
-	@test -f rr-infra/nginx/certs/server.crt || MSYS_NO_PATHCONV=1 openssl req -x509 -nodes -newkey rsa:2048 \
-		-keyout rr-infra/nginx/certs/server.key -out rr-infra/nginx/certs/server.crt \
-		-days 365 -subj "/CN=localhost"
-	@echo "$(GREEN)✓ Certificat TLS prêt (rr-infra/nginx/certs/)$(RESET)"
 
 prod-up: prod ## Alias de `make prod`
 
