@@ -1,0 +1,89 @@
+<div class="fr-container fr-py-6w">
+
+  <!-- En-tête -->
+  <div class="fr-grid-row fr-grid-row--middle fr-mb-4w">
+    <div class="fr-col">
+      <h1 class="fr-h2 fr-mb-0">Ressources</h1>
+    </div>
+    <div class="fr-col-auto">
+      <a routerLink="/resources/new" class="fr-btn fr-icon-add-line fr-btn--icon-left">
+        Créer une ressource
+      </a>
+    </div>
+  </div>
+
+  <!-- Recherche -->
+  <div class="fr-search-bar fr-mb-4w" role="search">
+    <label class="fr-label" for="search-input">Rechercher une ressource</label>
+    <input
+      class="fr-input"
+      placeholder="Mots-clés..."
+      type="search"
+      id="search-input"
+      [(ngModel)]="searchQuery"
+      (ngModelChange)="onSearch($event)"
+    >
+    <button class="fr-btn" title="Rechercher">Rechercher</button>
+  </div>
+
+  <!-- Filtres -->
+  <app-filter-bar
+    [categories]="categories()"
+    [relations]="relations()"
+    (filtersChange)="onFiltersChange($event)"
+  />
+
+  <!-- Tri + compteur -->
+  <div class="fr-grid-row fr-grid-row--middle fr-mb-4w">
+    <div class="fr-col">
+      <p class="fr-text--sm fr-text--mention fr-mb-0">{{ total() }} ressource(s) trouvée(s)</p>
+    </div>
+    <div class="fr-col-auto">
+      <div class="fr-select-group fr-mb-0">
+        <label class="fr-label fr-sr-only" for="sort-select">Trier par</label>
+        <select class="fr-select" id="sort-select" (change)="onOrderingChange($event)">
+          <option value="-resource_created_at">Plus récentes</option>
+          <option value="resource_created_at">Plus anciennes</option>
+          <option value="resource_title">Titre A → Z</option>
+          <option value="-resource_title">Titre Z → A</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chargement -->
+  @if (loading()) {
+    <div class="fr-grid-row fr-grid-row--center fr-py-9w">
+      <p class="fr-text--lead">Chargement en cours…</p>
+    </div>
+  }
+
+  <!-- Erreur -->
+  @if (error()) {
+    <div class="fr-alert fr-alert--error fr-mb-4w">
+      <p class="fr-alert__title">Une erreur est survenue</p>
+      <p>{{ error() }}</p>
+    </div>
+  }
+
+  <!-- Résultats -->
+  @if (!loading() && !error()) {
+    @if (resources().length > 0) {
+      <ul class="fr-grid-row fr-grid-row--gutters fr-grid-row--equal-height" style="position: relative; z-index: 0">
+        @for (r of resources(); track r.resource_id) {
+          <li class="fr-col-12 fr-col-md-6 fr-col-lg-4">
+            <app-resource-card [resource]="r" />
+          </li>
+        }
+      </ul>
+    } @else {
+      <div class="fr-callout fr-icon-information-line">
+        <h3 class="fr-callout__title">Aucun résultat</h3>
+        <p class="fr-callout__text">
+          Aucune ressource ne correspond à vos critères. Essayez d'élargir votre recherche ou de réinitialiser les filtres.
+        </p>
+      </div>
+    }
+  }
+
+</div>

@@ -21,6 +21,21 @@ services:
       timeout: 5s
       retries: 10
 
+  # ─── 1bis. Cache Redis (throttling partagé entre workers) ──────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: rr_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - rr_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   # ─── 2. Migrations Liquibase ───────────────────────────────────────────────
   liquibase:
     image: liquibase/liquibase:4.27
@@ -57,19 +72,21 @@ services:
         condition: service_healthy
       liquibase:
         condition: service_completed_successfully
+      redis:
+        condition: service_healthy
     networks:
       - rr_network
 
-  # ─── 4. Angular ────────────────────────────────────────────────────────────
-  frontend:
+  # ─── 4. Angular Web ────────────────────────────────────────────────────────
+  frontend-web:
     build:
-      context: ./rr-frontend
+      context: ./rr-frontend/front-web
       dockerfile: Dockerfile
-    container_name: rr_frontend
+    container_name: rr_frontend_web
     ports:
       - "4200:4200"
     volumes:
-      - ./rr-frontend:/app
+      - ./rr-frontend/front-web:/app
       - /app/node_modules
     environment:
       - NODE_ENV=development
@@ -81,9 +98,40 @@ services:
     networks:
       - rr_network
 
+
+  # ─── 5. SonarQube (qualité + sécurité) ─────────────────────────────────────
+  # Profil "tools" : ne démarre pas avec la stack applicative.
+  #   Démarrer  : docker compose -f docker-compose-root.yml --profile tools up -d sonarqube
+  #   Analyser  : make sonar   (ou la commande scanner ci-dessous)
+  sonarqube:
+    image: sonarqube:community
+    container_name: rr_sonarqube
+    profiles: ["tools"]
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    networks:
+      - rr_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9000/api/system/status | grep -q '\"status\":\"UP\"'"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+
+
 volumes:
   postgres_data:
     name: rr_pgdata
+  sonarqube_data:
+    name: rr_sonarqube_data
+  sonarqube_extensions:
+    name: rr_sonarqube_extensions
+  sonarqube_logs:
+    name: rr_sonarqube_logs
 
 networks:
   rr_network:

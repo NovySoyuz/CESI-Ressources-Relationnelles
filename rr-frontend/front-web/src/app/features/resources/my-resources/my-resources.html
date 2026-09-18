@@ -1,0 +1,94 @@
+<div class="fr-container fr-py-6w">
+
+  <div class="fr-grid-row fr-grid-row--middle fr-mb-4w">
+    <div class="fr-col">
+      <h1 class="fr-h2 fr-mb-0">Mes ressources</h1>
+    </div>
+    <div class="fr-col-auto">
+      <a routerLink="/resources/new" class="fr-btn fr-icon-add-line fr-btn--icon-left">
+        Créer une ressource
+      </a>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <p class="fr-text--lead">Chargement en cours…</p>
+  }
+
+  @if (error()) {
+    <div class="fr-alert fr-alert--error fr-mb-4w">
+      <p class="fr-alert__title">Erreur</p>
+      <p>{{ error() }}</p>
+    </div>
+  }
+
+  @if (!loading() && !error()) {
+
+    @if (resources().length === 0) {
+      <div class="fr-callout fr-icon-information-line">
+        <h2 class="fr-callout__title">Aucune ressource</h2>
+        <p class="fr-callout__text">Vous n'avez pas encore créé de ressource.</p>
+        <div class="fr-callout__text">
+          <a routerLink="/resources/new" class="fr-btn fr-btn--sm fr-mt-2w">
+            Créer ma première ressource
+          </a>
+        </div>
+      </div>
+    } @else {
+      <div class="fr-table fr-table--bordered">
+        <div class="fr-table__wrapper">
+          <div class="fr-table__container">
+            <div class="fr-table__content">
+              <table>
+                <caption class="fr-sr-only">Liste de mes ressources</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Titre</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Statut</th>
+                    <th scope="col">Créée le</th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (r of resources(); track r.resource_id) {
+                    <tr>
+                      <td>
+                        <a [routerLink]="['/resources', r.resource_id]" class="fr-link">
+                          {{ r.resource_title }}
+                        </a>
+                      </td>
+                      <td>
+                        @if (r.resource_label) {
+                          <p class="fr-badge fr-badge--blue-ecume fr-badge--no-icon fr-badge--sm">
+                            {{ labelDisplay[r.resource_label] }}
+                          </p>
+                        } @else {
+                          <span class="fr-text--mention">—</span>
+                        }
+                      </td>
+                      <td>
+                        @if (r.resource_is_visible) {
+                          <p class="fr-badge fr-badge--success fr-badge--no-icon fr-badge--sm">Publiée</p>
+                        } @else {
+                          <p class="fr-badge fr-badge--warning fr-badge--no-icon fr-badge--sm">En attente</p>
+                        }
+                      </td>
+                      <td class="fr-text--sm">
+                        {{ r.resource_created_at | date:'dd/MM/yyyy' }}
+                      </td>
+                      <td>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+  }
+
+</div>

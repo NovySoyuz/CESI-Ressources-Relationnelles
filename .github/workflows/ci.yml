@@ -1,0 +1,212 @@
+name: CI (RE)Sources Relationnelles
+
+on:
+  push:
+    branches: ["main", "develop", "feature/*"]
+  pull_request:
+    branches: ["main", "develop", "feature/*"]
+
+jobs:
+  # ── 1. Audit des dépendances (backend & frontend) ───────────────────────────
+  lint:
+    name: Audit dépendances (backend & frontend)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Audit dépendances Python (pip-audit)
+        working-directory: rr-backend
+        run: |
+          pip install --no-cache-dir -r requirements.txt
+          pip install --no-cache-dir pip-audit
+          pip-audit -r requirements.txt --desc || true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: rr-frontend/front-web/package-lock.json
+
+      - name: Installer les dépendances frontend
+        working-directory: rr-frontend/front-web
+        # npm bundlé avec node:22 a un bug connu ("Cannot read properties of
+        # null (reading 'edgesOut')") sur `npm ci` — cf. rr-frontend/front-web/Dockerfile.
+        run: |
+          npm install -g npm@latest
+          npm ci
+
+      - name: Vérifier le formatage (prettier)
+        working-directory: rr-frontend/front-web
+        # Informatif pour l'instant (dette de formatage préexistante) :
+        # n'échoue pas le build. Repasser en bloquant une fois `npx prettier
+        # --write` exécuté sur tout le repo.
+        run: npx prettier --check "src/**/*.{ts,html,scss}" || echo "::warning::Fichiers non formatés détectés (voir logs ci-dessus)."
+
+      - name: Audit dépendances npm
+        working-directory: rr-frontend/front-web
+        run: npm audit --audit-level=high || true
+
+  # ── 2. Backend — tests & couverture ──────────────────────────────────────────
+  backend:
+    name: Backend - tests & couverture
+    runs-on: ubuntu-latest
+    needs: lint
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: rr_user
+          POSTGRES_PASSWORD: rr_ci_password
+          POSTGRES_DB: rr_db
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U rr_user -d rr_db"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      SECRET_KEY: ci-secret-key-not-for-production
+      DEBUG: "True"
+      DJANGO_ENV: dev
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      DATABASE_URL: postgres://rr_user:rr_ci_password@localhost:5432/rr_db
+      CORS_ALLOWED_ORIGINS: http://localhost:4200
+    defaults:
+      run:
+        working-directory: rr-backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: rr-backend/requirements.txt
+
+      - name: Installer les dépendances
+        run: pip install -r requirements.txt
+
+      - name: Lancer les tests avec couverture
+        run: |
+          coverage run --source='.' manage.py test --noinput
+          coverage xml
+          coverage report
+
+      - name: Upload couverture backend
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: rr-backend/coverage.xml
+
+  # ── 3. Frontend — tests, couverture & build ─────────────────────────────────
+  frontend:
+    name: Frontend - tests, couverture & build
+    runs-on: ubuntu-latest
+    needs: lint
+    defaults:
+      run:
+        working-directory: rr-frontend/front-web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: rr-frontend/front-web/package-lock.json
+
+      - name: Installer les dépendances
+        # npm bundlé avec node:22 a un bug connu ("Cannot read properties of
+        # null (reading 'edgesOut')") sur `npm ci` — cf. rr-frontend/front-web/Dockerfile.
+        run: |
+          npm install -g npm@latest
+          npm ci
+
+      - name: Lancer les tests avec couverture
+        run: npm test -- --watch=false --coverage
+
+      - name: Upload couverture frontend
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: rr-frontend/front-web/coverage/
+
+      - name: Build production
+        run: npm run build
+
+      - name: Upload build frontend
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: rr-frontend/front-web/dist/
+
+  # ── 4. Scan des images Docker (Trivy) ────────────────────────────────────────
+  # Informatif (non-bloquant) : les CVE de l'image de base (OS) ne dépendent pas
+  # du code du projet. La base Trivy est cachée par jour pour rester rapide
+  # (~45s au premier run de la journée, ~5s ensuite).
+  docker-scan:
+    name: Scan sécurité images Docker (Trivy)
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image backend
+        run: docker build -t rr-backend:ci ./rr-backend
+
+      - name: Build image frontend
+        run: docker build -t rr-frontend:ci ./rr-frontend/front-web
+
+      - name: Date du jour (clé de cache)
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
+
+      - name: Cache base de vulnérabilités Trivy
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.cache/trivy
+          key: trivy-db-${{ steps.date.outputs.date }}
+          restore-keys: trivy-db-
+
+      - name: Scan image backend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: rr-backend:ci
+          severity: HIGH,CRITICAL
+          exit-code: "0"
+          ignore-unfixed: true
+
+      - name: Scan image frontend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: rr-frontend:ci
+          severity: HIGH,CRITICAL
+          exit-code: "0"
+          ignore-unfixed: true
+
+  # ── 5. Déploiement (Render) ──────────────────────────────────────────────────
+  # Déclenche les Deploy Hooks Render (back + front) une fois la qualité validée.
+  # N'agit que sur push vers main. Tant que les secrets RENDER_DEPLOY_HOOK_*
+  # ne sont pas configurés (services Render pas encore créés), l'étape est
+  # ignorée proprement au lieu d'échouer.
+  deploy:
+    name: Déploiement Render
+    runs-on: ubuntu-latest
+    needs: [backend, frontend, docker-scan]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Déclencher les Deploy Hooks Render
+        env:
+          BACKEND_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}
+          FRONTEND_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}
+        run: |
+          if [ -z "$BACKEND_HOOK" ] || [ -z "$FRONTEND_HOOK" ]; then
+            echo "::warning::Secrets RENDER_DEPLOY_HOOK_BACKEND / RENDER_DEPLOY_HOOK_FRONTEND absents — déploiement Render pas encore configuré, étape ignorée."
+            exit 0
+          fi
+          curl -fsS -X POST "$BACKEND_HOOK"
+          curl -fsS -X POST "$FRONTEND_HOOK"

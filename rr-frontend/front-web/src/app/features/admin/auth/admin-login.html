@@ -1,0 +1,56 @@
+<div class="admin-login">
+  <div class="admin-login__card">
+
+    <div class="admin-login__header">
+      <p class="fr-logo fr-logo--sm">République<br>Française</p>
+      <h1 class="fr-h4 fr-mt-3w fr-mb-0">(RE)Sources Relationnelles</h1>
+      <p class="fr-text--sm fr-text--mention fr-mb-0">Administration</p>
+    </div>
+
+    @if (error()) {
+      <div class="fr-alert fr-alert--error fr-mb-3w">
+        <p>{{ error() }}</p>
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="fr-mt-4w">
+
+      <div class="fr-input-group"
+           [class.fr-input-group--error]="form.get('user_mail')?.invalid && form.get('user_mail')?.touched">
+        <label class="fr-label" for="admin-mail">Adresse e-mail</label>
+        <input
+          class="fr-input"
+          [class.fr-input--error]="form.get('user_mail')?.invalid && form.get('user_mail')?.touched"
+          formControlName="user_mail"
+          type="email"
+          id="admin-mail"
+          autocomplete="email"
+        >
+        @if (form.get('user_mail')?.invalid && form.get('user_mail')?.touched) {
+          <p class="fr-error-text">Adresse e-mail invalide.</p>
+        }
+      </div>
+
+      <div class="fr-input-group fr-mt-3w"
+           [class.fr-input-group--error]="form.get('password')?.invalid && form.get('password')?.touched">
+        <label class="fr-label" for="admin-password">Mot de passe</label>
+        <input
+          class="fr-input"
+          [class.fr-input--error]="form.get('password')?.invalid && form.get('password')?.touched"
+          formControlName="password"
+          type="password"
+          id="admin-password"
+          autocomplete="current-password"
+        >
+      </div>
+
+      <div class="fr-btns-group fr-mt-4w">
+        <button type="submit" class="fr-btn fr-btn--icon-left fr-icon-lock-line" [disabled]="loading() || form.invalid">
+          {{ loading() ? 'Connexion…' : 'Accéder à l\'administration' }}
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+</div>

@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: 19-add-parent-comment
+      author: team-resources-relationnelles
+      comment: "Ajout parent_id sur comments pour les réponses imbriquées"
+      changes:
+        - addColumn:
+            tableName: comments
+            columns:
+              - column:
+                  name: parent_id
+                  type: UUID
+                  constraints:
+                    nullable: true
+                    foreignKeyName: fk_comment_parent
+                    references: comments(comments_id)

@@ -5,3 +5,9 @@ databaseChangeLog:
   - includeAll:
       path: changelogs/v0.0.1/
       relativeToChangelogFile: true
+  - includeAll:
+      path: changelogs/v0.0.2/
+      relativeToChangelogFile: true
+  - includeAll:
+      path: changelogs/v0.0.3/
+      relativeToChangelogFile: true

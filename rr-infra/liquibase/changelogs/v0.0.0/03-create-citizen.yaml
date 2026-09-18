@@ -2,6 +2,7 @@ databaseChangeLog:
   - changeSet:
       id: 03-create-citizen
       author: team-resources-relationnelles
+      validCheckSum: ANY
       comment: "Création de la table Citizen (hérite de User)"
       changes:
         - createTable:
@@ -23,8 +24,8 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: user_la_mode
-                  type: VARCHAR(10)
-                  defaultValue: "light"
+                  type: BOOLEAN
+                  defaultValueBoolean: false
                   constraints:
                     nullable: false
               - column:

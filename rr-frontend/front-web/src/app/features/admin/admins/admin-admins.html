@@ -1,0 +1,164 @@
+<div class="fr-container fr-py-6w">
+
+  <h1 class="fr-h2 fr-mb-4w">Administrateurs</h1>
+
+  @if (error()) {
+    <div class="fr-alert fr-alert--error fr-mb-4w">
+      <p>{{ error() }}</p>
+    </div>
+  }
+
+  @if (loading()) {
+    <p class="fr-text--lead">Chargement en cours…</p>
+  }
+
+  @if (!loading()) {
+
+    <!-- ── Admins actuels ── -->
+    <section class="fr-mb-6w">
+      <h2 class="fr-h4 fr-mb-3w">Administrateurs actuels</h2>
+
+      @if (admins().length === 0) {
+        <div class="fr-callout fr-icon-information-line">
+          <p class="fr-callout__title">Aucun administrateur</p>
+          <p class="fr-callout__text">Promouvez un utilisateur depuis la liste ci-dessous.</p>
+        </div>
+      } @else {
+        <div class="fr-table fr-table--bordered">
+          <div class="fr-table__wrapper">
+            <div class="fr-table__container">
+              <div class="fr-table__content">
+                <table>
+                  <caption class="fr-sr-only">Liste des administrateurs</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Nom</th>
+                      <th scope="col">E-mail</th>
+                      <th scope="col">Rôle</th>
+                      <th scope="col">Créé le</th>
+                      <th scope="col">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (a of admins(); track a.admin_id) {
+                      <tr>
+                        <td>{{ a.user_fname }} {{ a.user_lname }}</td>
+                        <td>{{ a.user_mail }}</td>
+                        <td>
+                          @if (a.admin_is_super_admin) {
+                            <p class="fr-badge fr-badge--purple-glycine fr-badge--no-icon fr-badge--sm">Super admin</p>
+                          } @else {
+                            <p class="fr-badge fr-badge--blue-france fr-badge--no-icon fr-badge--sm">Admin</p>
+                          }
+                        </td>
+                        <td>{{ a.admin_created_at | date:'dd/MM/yyyy' }}</td>
+                        <td>
+                          <ul class="fr-btns-group fr-btns-group--inline fr-btns-group--sm">
+                            <li>
+                              <button class="fr-btn fr-btn--sm fr-btn--secondary fr-icon-star-line fr-btn--icon-left"
+                                      (click)="toggleSuperAdmin(a)">
+                                {{ a.admin_is_super_admin ? 'Rétrograder' : 'Super admin' }}
+                              </button>
+                            </li>
+                            <li>
+                              <button class="fr-btn fr-btn--sm fr-btn--tertiary fr-icon-delete-line fr-btn--icon-left"
+                                      (click)="delete(a.admin_id)">
+                                Retirer
+                              </button>
+                            </li>
+                          </ul>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </section>
+
+    <!-- ── Tous les utilisateurs ── -->
+    <section>
+      <h2 class="fr-h4 fr-mb-1w">Tous les utilisateurs</h2>
+      <p class="fr-text--sm fr-text--mention fr-mb-3w">
+        Cochez "Super admin" si nécessaire, puis cliquez sur "Promouvoir".
+      </p>
+
+      @if (formError()) {
+        <div class="fr-alert fr-alert--error fr-alert--sm fr-mb-3w">
+          <p>{{ formError() }}</p>
+        </div>
+      }
+
+      @if (users().length === 0) {
+        <p class="fr-text--sm">Aucun utilisateur trouvé.</p>
+      } @else {
+        <div class="fr-table fr-table--bordered">
+          <div class="fr-table__wrapper">
+            <div class="fr-table__container">
+              <div class="fr-table__content">
+                <table>
+                  <caption class="fr-sr-only">Liste de tous les utilisateurs</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Nom</th>
+                      <th scope="col">E-mail</th>
+                      <th scope="col">UUID</th>
+                      <th scope="col">Statut</th>
+                      <th scope="col">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (u of users(); track u.user_id) {
+                      <tr>
+                        <td>{{ u.user_fname }} {{ u.user_lname }}</td>
+                        <td>{{ u.user_mail }}</td>
+                        <td><code class="fr-text--sm">{{ u.user_id }}</code></td>
+                        <td>
+                          @if (u.is_admin) {
+                            <p class="fr-badge fr-badge--success fr-badge--no-icon fr-badge--sm">Administrateur</p>
+                          } @else {
+                            <p class="fr-badge fr-badge--new fr-badge--no-icon fr-badge--sm">Citoyen</p>
+                          }
+                        </td>
+                        <td>
+                          @if (!u.is_admin) {
+                            <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
+                              <div class="fr-col-auto">
+                                <div class="fr-checkbox-group fr-checkbox-group--sm">
+                                  <input
+                                    type="checkbox"
+                                    [id]="'super-' + u.user_id"
+                                    [checked]="isSuperAdminSelected(u.user_id)"
+                                    (change)="toggleSuperAdminSelection(u.user_id)"
+                                  >
+                                  <label class="fr-label" [for]="'super-' + u.user_id">Super admin</label>
+                                </div>
+                              </div>
+                              <div class="fr-col-auto">
+                                <button
+                                  class="fr-btn fr-btn--sm fr-icon-award-line fr-btn--icon-left"
+                                  (click)="promote(u)"
+                                  [disabled]="submitting() === u.user_id">
+                                  {{ submitting() === u.user_id ? 'En cours…' : 'Promouvoir' }}
+                                </button>
+                              </div>
+                            </div>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </section>
+
+  }
+
+</div>

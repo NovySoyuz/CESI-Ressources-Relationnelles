@@ -1,0 +1,61 @@
+<div class="fr-container fr-py-6w">
+
+  <div class="fr-grid-row fr-grid-row--middle fr-mb-4w">
+    <div class="fr-col">
+      <h1 class="fr-h2 fr-mb-0">Progression sociale</h1>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <p class="fr-text--lead">Chargement en cours…</p>
+  }
+
+  @if (errorMessage(); as message) {
+    <div class="fr-alert fr-alert--error fr-mb-4w">
+      <p class="fr-alert__title">Erreur</p>
+      <p>{{ message }}</p>
+    </div>
+  }
+
+  @if (!isLoading() && !errorMessage()) {
+
+    <div class="fr-callout fr-mb-4w">
+      <p class="fr-callout__title">Total courant</p>
+      <p class="fr-callout__text">{{ summary().total }} interaction(s) enregistrée(s) au total.</p>
+    </div>
+
+    <div class="fr-grid-row fr-grid-row--gutters">
+      @for (metric of metrics(); track metric.label) {
+        <div class="fr-col-12 fr-col-md-6">
+          <article class="fr-card progression-card">
+            <div class="fr-card__body">
+              <div class="fr-card__content">
+
+                <div class="fr-grid-row fr-grid-row--middle fr-mb-2w">
+                  <div class="fr-col">
+                    <p class="fr-text--sm fr-mb-1w">{{ metric.label }}</p>
+                    <h2 class="fr-h5 fr-mb-0">{{ metric.value }}</h2>
+                  </div>
+                  <div class="fr-col-auto">
+                    <p class="fr-badge fr-badge--blue-france fr-badge--no-icon fr-mb-0">
+                      {{ (metric.ratio * 100) | number:'1.0-0' }}%
+                    </p>
+                  </div>
+                </div>
+
+                <div class="progression-card__bar fr-mb-2w" aria-hidden="true">
+                  <span class="progression-card__fill" [style.width.%]="metric.ratio * 100"></span>
+                </div>
+
+                <p class="fr-card__desc fr-mb-0">{{ (metric.ratio * 100) | number:'1.0-0' }}% du total des interactions.</p>
+
+              </div>
+            </div>
+          </article>
+        </div>
+      }
+    </div>
+
+  }
+
+</div>

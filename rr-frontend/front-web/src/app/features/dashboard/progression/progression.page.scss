@@ -1,0 +1,18 @@
+.progression-card {
+  height: 100%;
+}
+
+.progression-card__bar {
+  overflow: hidden;
+  height: 0.75rem;
+  border-radius: 999px;
+  background: var(--background-contrast-grey);
+}
+
+.progression-card__fill {
+  display: block;
+  height: 100%;
+  min-width: 0.5rem;
+  border-radius: inherit;
+  background: #000091;
+}

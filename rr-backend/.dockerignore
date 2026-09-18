@@ -1,0 +1,20 @@
+# Secrets & données locales
+.env
+*.sqlite3
+db.sqlite3
+
+# Artefacts Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# VCS / IDE
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Divers
+*.log

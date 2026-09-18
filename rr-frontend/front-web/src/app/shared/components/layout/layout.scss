@@ -1,0 +1,91 @@
+/* Styles gérés par le DSFR — ajustements Angular uniquement */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.layout-main {
+  flex: 1;
+  padding-top: 1.5rem;
+  padding-bottom: 2rem;
+  background-color: var(--background-default-grey);
+}
+
+.layout-footer {
+  background: #003189;
+  color: #ffffffcc;
+  font-size: 0.875rem;
+}
+
+.footer-inner {
+  display: flex;
+  gap: 3rem;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem;
+}
+
+.footer-brand {
+  flex: 2;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  .footer-logo {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  p    { color: #ffffffb3; margin: 0; }
+  small { color: #ffffff80; }
+}
+
+.footer-links {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  .footer-section-title {
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+  }
+
+  a {
+    color: #ffffffb3;
+    text-decoration: none;
+    transition: color 0.15s;
+    &:hover { color: #ffffff; }
+  }
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  max-width: 100%;
+  font-size: 0.78rem;
+  color: #ffffff80;
+}
+
+.fr-footer__bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (max-width: 640px) {
+  .footer-inner     { gap: 1.5rem; }
+  .footer-bottom    { flex-direction: column; text-align: center; }
+}

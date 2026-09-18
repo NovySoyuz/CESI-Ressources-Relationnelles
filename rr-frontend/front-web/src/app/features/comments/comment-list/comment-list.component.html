@@ -1,0 +1,58 @@
+<div class="comment-section">
+
+  @if (isLoading()) {
+    <p class="fr-text--sm fr-text--mention-grey">Chargement...</p>
+  }
+
+  @if (!isLoading() && rootComments().length === 0) {
+    <p class="fr-text--sm fr-text--mention-grey">Aucun commentaire pour l'instant.</p>
+  }
+
+  <div class="comment-list">
+    @for (comment of rootComments(); track comment.id) {
+      <div class="comment-item">
+        <div class="comment-item__meta">
+          <span class="comment-item__author">{{ shortAuthor(comment.authorId) }}</span>
+          <time class="fr-text--xs fr-text--mention-grey">{{ comment.createdAt | date: 'dd/MM/yyyy à HH:mm' }}</time>
+          @if (comment.authorId === currentUserId()) {
+            <button
+              class="fr-btn fr-btn--tertiary-no-outline fr-btn--sm fr-btn--icon-only fr-icon-delete-line"
+              type="button"
+              title="Supprimer"
+              [disabled]="deletingCommentId() === comment.id"
+              (click)="deleteComment(comment)"
+            ></button>
+          }
+        </div>
+
+        <p class="comment-item__text">{{ comment.text }}</p>
+
+        @if (repliesFor(comment.id).length > 0) {
+          <div class="comment-replies">
+            @for (reply of repliesFor(comment.id); track reply.id) {
+              <div class="comment-item">
+                <div class="comment-item__meta">
+                  <span class="comment-item__author">{{ shortAuthor(reply.authorId) }}</span>
+                  <time class="fr-text--xs fr-text--mention-grey">{{ reply.createdAt | date: 'dd/MM/yyyy à HH:mm' }}</time>
+                  @if (reply.authorId === currentUserId()) {
+                    <button
+                      class="fr-btn fr-btn--tertiary-no-outline fr-btn--sm fr-btn--icon-only fr-icon-delete-line"
+                      type="button"
+                      title="Supprimer"
+                      [disabled]="deletingCommentId() === reply.id"
+                      (click)="deleteComment(reply)"
+                    ></button>
+                  }
+                </div>
+                <p class="comment-item__text">{{ reply.text }}</p>
+              </div>
+            }
+          </div>
+        }
+
+        <app-comment-reply [commentId]="comment.id" (replied)="handleReply($event)"></app-comment-reply>
+      </div>
+    }
+  </div>
+
+</div>

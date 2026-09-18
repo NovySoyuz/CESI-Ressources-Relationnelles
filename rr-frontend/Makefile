@@ -1,39 +1,46 @@
-.PHONY: help up down logs shell generate build test
+.PHONY: help web-up web-down web-logs web-shell web-build cap-sync-dev cap-sync cap-ios-dev cap-ios cap-android
 
 GREEN  := \033[0;32m]
 YELLOW := \033[0;33m]
-RED    := \033[0;31m]
 RESET  := \033[0m]
-
-COMPOSE := docker compose -f ../docker-compose-root.yml --env-file ../.env
 
 help: ## Affiche cette aide
 	@echo ""
-	@echo "  $(GREEN)rr-frontend — Commandes Angular$(RESET)"
+	@echo "  $(GREEN)rr-frontend — Web & Mobile$(RESET)"
 	@echo ""
-	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##/ { printf "  $(YELLOW)%-18s$(RESET) %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##/ { printf "  $(YELLOW)%-20s$(RESET) %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 	@echo ""
 
-up: ## Démarre Angular
-	@echo "$(GREEN)→ Démarrage Angular sur http://localhost:4200...$(RESET)"
-	$(COMPOSE) up -d frontend
+# ── Web ───────────────────────────────────────────────────────────────────────
 
-down: ## Arrête Angular
-	$(COMPOSE) stop frontend
+web-up: ## Démarre Angular Web (port 4200)
+	$(MAKE) -C front-web up
 
-logs: ## Logs Angular en temps réel
-	$(COMPOSE) logs -f frontend
+web-down: ## Arrête Angular Web
+	$(MAKE) -C front-web down
 
-shell: ## Shell dans le container Angular
-	$(COMPOSE) exec frontend sh
+web-logs: ## Logs Angular Web
+	$(MAKE) -C front-web logs
 
-generate: ## Génère un composant/service (ex: make generate TYPE=component NAME=header)
-	@echo "$(GREEN)→ ng generate $(TYPE) $(NAME)...$(RESET)"
-	$(COMPOSE) exec frontend ng generate $(TYPE) $(NAME)
+web-shell: ## Shell container Web
+	$(MAKE) -C front-web shell
 
-build: ## Build de production
-	@echo "$(GREEN)→ Build production...$(RESET)"
-	$(COMPOSE) exec frontend ng build --configuration production
+web-build: ## Build prod Web
+	$(MAKE) -C front-web build
 
-test: ## Lance les tests Angular
-	$(COMPOSE) exec frontend ng test --watch=false --browsers=ChromeHeadless
+# ── Mobile (Capacitor) ────────────────────────────────────────────────────────
+
+cap-sync-dev: ## Build dev front-web + sync Capacitor
+	$(MAKE) -C front-mobile cap-sync-dev
+
+cap-sync: ## Build prod front-web + sync Capacitor
+	$(MAKE) -C front-mobile cap-sync
+
+cap-ios-dev: ## Build dev + pod install + ouvre Xcode
+	$(MAKE) -C front-mobile cap-ios-dev
+
+cap-ios: ## Build prod + pod install + ouvre Xcode
+	$(MAKE) -C front-mobile cap-ios
+
+cap-android: ## Ouvre Android dans Android Studio
+	$(MAKE) -C front-mobile cap-android

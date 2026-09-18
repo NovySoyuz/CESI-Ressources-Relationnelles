@@ -1,0 +1,72 @@
+// =============================================================================
+// STYLES GLOBAUX — (RE)Sources Relationnelles
+// =============================================================================
+// Le CSS DSFR (core + utilitaires) est chargé via angular.json → styles[].
+// Ce fichier contient uniquement les ajustements et classes propres au projet.
+//
+// Sommaire :
+//   1. Structure de l'application
+//   2. Surcharges DSFR
+//   3. Classes utilitaires projet (préfixe rr-)
+// =============================================================================
+
+
+// ─── 1. Structure de l'application ────────────────────────────────────────────
+
+body {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+app-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+// Le <main> prend tout l'espace disponible → footer toujours en bas
+main {
+  flex: 1;
+}
+
+
+// ─── 2. Surcharges DSFR ───────────────────────────────────────────────────────
+
+// Les <ul> utilisées comme conteneurs de grille ne doivent pas hériter
+// des styles de liste que DSFR peut appliquer
+ul.fr-grid-row {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+// Hauteur égale sur les cartes dans une grille
+.fr-grid-row--equal-height > [class*="fr-col"] {
+  display: flex;
+  flex-direction: column;
+
+  > .fr-card {
+    height: 100%;
+  }
+}
+
+
+// ─── 3. Classes utilitaires projet ────────────────────────────────────────────
+
+// Texte multi-lignes (descriptions, instructions)
+.rr-pre-line {
+  white-space: pre-line;
+}
+
+// Groupe de badges de statut inline (type + visibilité)
+.rr-status-badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.admin-stat--warning { color: var(--text-default-warning); }
+.admin-stat--success { color: var(--text-default-success); }

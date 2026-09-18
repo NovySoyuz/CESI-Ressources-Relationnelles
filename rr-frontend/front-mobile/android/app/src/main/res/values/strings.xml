@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Ressources Relationnelles</string>
+    <string name="title_activity_main">Ressources Relationnelles</string>
+    <string name="package_name">fr.ressourcesrelationnelles.app</string>
+    <string name="custom_url_scheme">fr.ressourcesrelationnelles.app</string>
+</resources>

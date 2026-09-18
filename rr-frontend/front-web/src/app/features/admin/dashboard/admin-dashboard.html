@@ -1,0 +1,111 @@
+<div class="fr-container fr-py-6w">
+
+  <div class="fr-grid-row fr-grid-row--middle fr-mb-4w">
+    <div class="fr-col">
+      <h1 class="fr-h2 fr-mb-0">Tableau de bord</h1>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <p class="fr-text--lead">Chargement en cours…</p>
+  }
+
+  @if (error()) {
+    <div class="fr-alert fr-alert--error fr-mb-4w">
+      <p class="fr-alert__title">Erreur</p>
+      <p>{{ error() }}</p>
+    </div>
+  }
+
+  @if (!loading() && !error()) {
+
+    <!-- Tuiles de stats -->
+    <div class="fr-grid-row fr-grid-row--gutters fr-mb-6w">
+
+      <div class="fr-col-12 fr-col-sm-6 fr-col-lg-3">
+        <div class="fr-tile fr-tile--sm fr-tile--no-icon">
+          <div class="fr-tile__body">
+            <h2 class="fr-tile__title">{{ totalResources() }}</h2>
+            <p class="fr-tile__desc">Ressources totales</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="fr-col-12 fr-col-sm-6 fr-col-lg-3">
+        <div class="fr-tile fr-tile--sm fr-tile--no-icon">
+          <div class="fr-tile__body">
+            <h2 class="fr-tile__title admin-stat--warning">{{ pendingCount() }}</h2>
+            <p class="fr-tile__desc">En attente de validation</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="fr-col-12 fr-col-sm-6 fr-col-lg-3">
+        <div class="fr-tile fr-tile--sm fr-tile--no-icon">
+          <div class="fr-tile__body">
+            <h2 class="fr-tile__title admin-stat--success">{{ publishedCount() }}</h2>
+            <p class="fr-tile__desc">Ressources publiées</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="fr-col-12 fr-col-sm-6 fr-col-lg-3">
+        <div class="fr-tile fr-tile--sm fr-tile--no-icon">
+          <div class="fr-tile__body">
+            <h2 class="fr-tile__title">{{ adminsCount() }}</h2>
+            <p class="fr-tile__desc">Administrateurs</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Accès rapides -->
+    <h2 class="fr-h5 fr-mb-3w">Accès rapides</h2>
+    <div class="fr-grid-row fr-grid-row--gutters">
+
+      <div class="fr-col-12 fr-col-md-6">
+        <div class="fr-card fr-card--no-arrow">
+          <div class="fr-card__body">
+            <div class="fr-card__content">
+              <h3 class="fr-card__title">
+                <a routerLink="/admin/resources" class="fr-card__link">Gérer les ressources</a>
+              </h3>
+              <p class="fr-card__desc">
+                Consulter toutes les ressources, valider les soumissions en attente ou supprimer du contenu inapproprié.
+              </p>
+            </div>
+            @if (pendingCount() > 0) {
+              <div class="fr-card__footer">
+                <p class="fr-badge fr-badge--warning fr-badge--no-icon">
+                  {{ pendingCount() }} en attente
+                </p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="fr-col-12 fr-col-md-6">
+        <div class="fr-card fr-card--no-arrow">
+          <div class="fr-card__body">
+            <div class="fr-card__content">
+              <h3 class="fr-card__title">
+                <a routerLink="/admin/admins" class="fr-card__link">Gérer les administrateurs</a>
+              </h3>
+              <p class="fr-card__desc">
+                Ajouter ou retirer des droits d'administration, gérer les super-administrateurs.
+              </p>
+            </div>
+            <div class="fr-card__footer">
+              <p class="fr-badge fr-badge--blue-france fr-badge--no-icon">{{ adminsCount() }} admin(s)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  }
+
+</div>
