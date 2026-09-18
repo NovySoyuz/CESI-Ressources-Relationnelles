@@ -5,5 +5,5 @@
 // À adapter si le nom du service Render change (cf. render.yaml).
 export const environment = {
   androidApiHost: '10.0.2.2',
-  apiUrl: 'https://rr-backend.onrender.com',
+  apiUrl: 'https://rr-backend-63e6.onrender.com',
 };

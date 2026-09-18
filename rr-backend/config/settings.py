@@ -19,6 +19,15 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 # #5 — Liste blanche d'hôtes depuis l'environnement.
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
+# Render injecte automatiquement le hostname réel du service (utile si un
+# suffixe anti-collision a été ajouté au nom, ex. "rr-backend-a1b2.onrender.com"
+# au lieu de "rr-backend.onrender.com"). Sans ça, le health check HTTP de
+# Render (Host = ce hostname réel) reçoit un 400 DisallowedHost en boucle et
+# le déploiement ne devient jamais "live". Voir https://render.com/docs/environment-variables
+RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.staticfiles',
@@ -137,7 +146,12 @@ X_FRAME_OPTIONS = 'DENY'
 # Actifs uniquement en production (derrière HTTPS) — évite de casser le dev en HTTP.
 PRODUCTION = os.getenv('DJANGO_ENV', 'dev') == 'production'
 if PRODUCTION:
-    SECURE_SSL_REDIRECT = True
+    # Render termine déjà le TLS à son edge et redirige HTTP→HTTPS lui-même
+    # avant d'atteindre le conteneur ; une redirection applicative en plus
+    # casse son health check interne (requête HTTP directe, sans passer par
+    # l'edge public) qui reste alors bloqué en boucle sur des 301 → déploiement
+    # qui ne devient jamais "live". Désactivable via DJANGO_SECURE_SSL_REDIRECT.
+    SECURE_SSL_REDIRECT = os.getenv('DJANGO_SECURE_SSL_REDIRECT', 'True') == 'True'
     SECURE_HSTS_SECONDS = 31536000          # 1 an
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True

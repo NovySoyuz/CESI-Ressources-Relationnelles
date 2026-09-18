@@ -28,7 +28,11 @@ services:
     dockerContext: ./rr-backend
     # Le Dockerfile prévoit `runserver` par défaut (dev) ; en production on
     # sert avec gunicorn, lié au port imposé par Render via $PORT.
-    dockerCommand: "/bin/sh -c \"gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2\""
+    # Render exécute déjà cette commande via un shell (expansion de $PORT
+    # constatée) : pas besoin (et pas souhaitable) de l'englober nous-mêmes
+    # dans un "/bin/sh -c" supplémentaire, ça cassait l'exécution (double
+    # imbrication de guillemets → commande introuvable).
+    dockerCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2
     healthCheckPath: /
     # Déploiement piloté par la CI (job `deploy` de ci.yml via Deploy Hook)
     # une fois les tests/scans passés, plutôt qu'à chaque push sur main.
@@ -40,16 +44,23 @@ services:
         value: "False"
       - key: DJANGO_ENV
         value: production
+      # Render gère déjà la redirection HTTP→HTTPS et le TLS à son edge ;
+      # une redirection applicative en plus casse son health check interne
+      # (cf. commentaire dans settings.py).
+      - key: DJANGO_SECURE_SSL_REDIRECT
+        value: "False"
       - key: DATABASE_URL
         fromDatabase:
           name: rr-postgres
           property: connectionString
-      # À ajuster si Render suffixe le nom du service (collision de nom) :
-      # vérifier l'URL réelle sur le dashboard après la 1ère synchro.
+      # Render a suffixé les noms (collision) : URLs réelles constatées sur
+      # le dashboard. ALLOWED_HOSTS n'a pas strictement besoin de cette valeur
+      # (settings.py ajoute déjà RENDER_EXTERNAL_HOSTNAME dynamiquement), mais
+      # on la documente explicitement pour éviter toute confusion.
       - key: ALLOWED_HOSTS
-        value: rr-backend.onrender.com
+        value: rr-backend-63e6.onrender.com
       - key: CORS_ALLOWED_ORIGINS
-        value: https://rr-frontend.onrender.com
+        value: https://rr-frontend-f5xj.onrender.com
       # Pas de REDIS_URL : le plan free de Render n'inclut pas de Key Value
       # managé. settings.py retombe automatiquement sur LocMemCache (voir
       # commentaire dans rr-backend/config/settings.py).
