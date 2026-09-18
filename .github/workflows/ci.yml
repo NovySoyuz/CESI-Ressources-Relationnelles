@@ -33,7 +33,11 @@ jobs:
 
       - name: Installer les dépendances frontend
         working-directory: rr-frontend/front-web
-        run: npm ci
+        # npm bundlé avec node:22 a un bug connu ("Cannot read properties of
+        # null (reading 'edgesOut')") sur `npm ci` — cf. rr-frontend/front-web/Dockerfile.
+        run: |
+          npm install -g npm@latest
+          npm ci
 
       - name: Vérifier le formatage (prettier)
         working-directory: rr-frontend/front-web
@@ -116,7 +120,11 @@ jobs:
           cache-dependency-path: rr-frontend/front-web/package-lock.json
 
       - name: Installer les dépendances
-        run: npm ci
+        # npm bundlé avec node:22 a un bug connu ("Cannot read properties of
+        # null (reading 'edgesOut')") sur `npm ci` — cf. rr-frontend/front-web/Dockerfile.
+        run: |
+          npm install -g npm@latest
+          npm ci
 
       - name: Lancer les tests avec couverture
         run: npm test -- --watch=false --coverage
