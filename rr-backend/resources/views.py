@@ -187,13 +187,11 @@ class ResourceDetailView(APIView):
                 {'error': _ERR_RESOURCE_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        try:
-            citizen = Citizen.objects.get(user_id=request.user.user_id)
-        except Citizen.DoesNotExist:
-            return Response({'error': _ERR_CITIZEN_NOT_FOUND}, status=status.HTTP_403_FORBIDDEN)
-        if not citizen.user_is_modo:
+        # Seul l'auteur peut modifier le contenu de sa ressource (la modération
+        # de visibilité est gérée séparément par ResourcePublishView).
+        if str(resource.resource_author.user_id) != str(request.user.user_id):
             return Response(
-                {'error': 'Modification réservée aux modérateurs.'},
+                {'error': 'Modification réservée à l\'auteur de la ressource.'},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -215,13 +213,11 @@ class ResourceDetailView(APIView):
                 {'error': _ERR_RESOURCE_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        try:
-            citizen = Citizen.objects.get(user_id=request.user.user_id)
-        except Citizen.DoesNotExist:
-            return Response({'error': _ERR_CITIZEN_NOT_FOUND}, status=status.HTTP_403_FORBIDDEN)
-        if not citizen.user_is_modo:
+        # Seul l'auteur peut supprimer sa ressource (idem : la modération de
+        # visibilité passe par ResourcePublishView, pas par ce endpoint).
+        if str(resource.resource_author.user_id) != str(request.user.user_id):
             return Response(
-                {'error': 'Suppression réservée aux modérateurs.'},
+                {'error': 'Suppression réservée à l\'auteur de la ressource.'},
                 status=status.HTTP_403_FORBIDDEN,
             )
         resource.delete()

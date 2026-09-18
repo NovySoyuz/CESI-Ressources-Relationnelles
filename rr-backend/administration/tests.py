@@ -9,6 +9,7 @@ from rest_framework_simplejwt.exceptions import AuthenticationFailed
 from users.models import User, Citizen
 from administration.models import Admin
 from administration.serializers import AdminLoginSerializer, AdminCreateSerializer
+from resources.models import Resource
 
 
 # ──────────────────────────────────────────────────────────────
@@ -21,11 +22,15 @@ def setUpModule():
         schema.create_model(User)
         schema.create_model(Citizen)
         schema.create_model(Admin)
+        # Nécessaire pour le CASCADE User → Citizen → Resource déclenché par
+        # self.user.delete() dans les tests d'intégration ci-dessous.
+        schema.create_model(Resource)
 
 
 def tearDownModule():
     """Supprime les tables après tous les tests du fichier."""
     with connection.schema_editor() as schema:
+        schema.delete_model(Resource)
         schema.delete_model(Admin)
         schema.delete_model(Citizen)
         schema.delete_model(User)

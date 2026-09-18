@@ -16,7 +16,7 @@ class ResourceListViewTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = MagicMock(spec=User)
-        self.user.id = uuid.uuid4()
+        self.user.user_id = uuid.uuid4()
 
     def test_get_resources_sans_authentification(self):
         """
@@ -74,22 +74,33 @@ class ResourceListViewTests(TestCase):
         mock_citizen = MagicMock()
         mock_resource = MagicMock()
         mock_resource.resource_id = uuid.uuid4()
-        mock_resource.resource_label = None
+        mock_resource.resource_label = 'article'
         mock_resource.resource_title = 'Ma ressource'
         mock_resource.resource_description = None
         mock_resource.resource_created_at = datetime(2026, 1, 1, 12, 0, 0)
         mock_resource.resource_last_modif = datetime(2026, 1, 1, 12, 0, 0)
-        mock_resource.resource_author.user_id = self.user.id
+        mock_resource.resource_author.user_id = self.user.user_id
         mock_resource.categories = []
         mock_resource.relations = []
 
-        with patch('resources.views.Citizen.objects.get', return_value=mock_citizen):
-            with patch('resources.views.Resource.objects.create', return_value=mock_resource):
-                response = self.client.post(
-                    '/api/resources/',
-                    {'resource_title': 'Ma ressource'},
-                    format='json',
-                )
+        payload = {
+            'resource_title': 'Ma ressource',
+            'resource_label': 'article',
+            'categories': [str(uuid.uuid4())],
+            'relations': [str(uuid.uuid4())],
+        }
+
+        with patch('resources.views.Citizen.objects.get', return_value=mock_citizen), \
+             patch('resources.views.Resource.objects.create', return_value=mock_resource), \
+             patch('resources.views.Category.objects.get', return_value=MagicMock()), \
+             patch('resources.views.Relation.objects.get', return_value=MagicMock()), \
+             patch('resources.views.ResourceCategory.objects.create'), \
+             patch('resources.views.ResourceRelation.objects.create'):
+            response = self.client.post(
+                '/api/resources/',
+                payload,
+                format='json',
+            )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 
@@ -101,7 +112,7 @@ class ResourceDetailViewTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = MagicMock(spec=User)
-        self.user.id = uuid.uuid4()
+        self.user.user_id = uuid.uuid4()
         self.resource_id = uuid.uuid4()
 
     def _make_resource(self, visible=True, author_id=None):
@@ -113,7 +124,7 @@ class ResourceDetailViewTests(TestCase):
         mock_resource.resource_description = 'Description test'
         mock_resource.resource_created_at = datetime(2026, 1, 1, 12, 0, 0)
         mock_resource.resource_last_modif = datetime(2026, 1, 1, 12, 0, 0)
-        mock_resource.resource_author.user_id = author_id or self.user.id
+        mock_resource.resource_author.user_id = author_id or self.user.user_id
         mock_resource.categories = []
         mock_resource.relations = []
         return mock_resource
@@ -222,7 +233,7 @@ class ResourcePublishViewTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = MagicMock(spec=User)
-        self.user.id = uuid.uuid4()
+        self.user.user_id = uuid.uuid4()
         self.resource_id = uuid.uuid4()
 
     def test_publish_sans_authentification(self):
@@ -280,7 +291,7 @@ class ResourcePublishViewTests(TestCase):
         mock_resource.resource_description = None
         mock_resource.resource_created_at = datetime(2026, 1, 1, 12, 0, 0)
         mock_resource.resource_last_modif = datetime(2026, 1, 1, 12, 0, 0)
-        mock_resource.resource_author.user_id = self.user.id
+        mock_resource.resource_author.user_id = self.user.user_id
         mock_resource.categories = []
         mock_resource.relations = []
         with patch('resources.views.Citizen.objects.get', return_value=mock_citizen):

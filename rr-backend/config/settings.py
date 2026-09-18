@@ -1,8 +1,15 @@
 from pathlib import Path
+import sys
 import os
 import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# `manage.py test` / pytest : détecté pour isoler le cache (throttling DRF) de
+# tout Redis partagé (dev, CI). Sans ça, les compteurs de débit persistent
+# entre deux exécutions de la suite et peuvent faire échouer des tests
+# indépendants (429 au lieu du code attendu).
+TESTING = 'test' in sys.argv or 'pytest' in sys.modules
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 
@@ -60,12 +67,21 @@ DATABASES = {
 }
 
 # Cache Redis — backend du throttling DRF, partagé entre workers/instances.
-CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': os.getenv('REDIS_URL', 'redis://redis:6379/1'),
+# En test, on isole avec un cache mémoire local pour ne pas dépendre d'un
+# Redis externe ni laisser les compteurs de throttling persister entre runs.
+if TESTING:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
     }
-}
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': os.getenv('REDIS_URL', 'redis://redis:6379/1'),
+        }
+    }
 
 LANGUAGE_CODE = 'fr-fr'
 TIME_ZONE = 'Europe/Paris'

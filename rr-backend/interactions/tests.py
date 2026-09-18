@@ -15,7 +15,7 @@ class InteractionViewTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = MagicMock(spec=User)
-        self.user.id = uuid.uuid4()
+        self.user.user_id = uuid.uuid4()
         self.resource_id = uuid.uuid4()
 
     def test_get_interaction_sans_authentification(self):
@@ -79,7 +79,7 @@ class InteractionViewTests(TestCase):
         self.client.force_authenticate(user=self.user)
 
         mock_citizen = MagicMock()
-        mock_citizen.user_id = self.user.id
+        mock_citizen.user_id = self.user.user_id
 
         with patch('interactions.views.Citizen.objects.get', return_value=mock_citizen):
             with patch('interactions.views.Resource.objects.get') as mock_res:
@@ -101,7 +101,7 @@ class CommentListViewTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = MagicMock(spec=User)
-        self.user.id = uuid.uuid4()
+        self.user.user_id = uuid.uuid4()
         self.resource_id = uuid.uuid4()
 
     def test_get_commentaires_sans_authentification(self):
@@ -151,7 +151,7 @@ class CommentDetailViewTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = MagicMock(spec=User)
-        self.user.id = uuid.uuid4()
+        self.user.user_id = uuid.uuid4()
         self.resource_id = uuid.uuid4()
         self.comment_id = uuid.uuid4()
 
@@ -186,7 +186,7 @@ class CommentDetailViewTests(TestCase):
 
         # On simule un commentaire qui appartient à un AUTRE citoyen
         mock_comment = MagicMock()
-        mock_comment.citizen.user_id = uuid.uuid4()  # UUID différent de self.user.id
+        mock_comment.citizen.user_id = uuid.uuid4()  # UUID différent de self.user.user_id
 
         with patch('interactions.views.Comment.objects.get', return_value=mock_comment):
             response = self.client.delete(
@@ -203,7 +203,7 @@ class CommentDetailViewTests(TestCase):
 
         mock_comment = MagicMock()
         # UUID identique à celui de l'utilisateur connecté
-        mock_comment.citizen.user_id = self.user.id
+        mock_comment.citizen.user_id = self.user.user_id
 
         with patch('interactions.views.Comment.objects.get', return_value=mock_comment):
             response = self.client.delete(
