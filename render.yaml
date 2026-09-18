@@ -1,0 +1,69 @@
+# Render Blueprint — provisionne en une fois la base Postgres, le backend
+# Django (Docker/gunicorn) et le frontend Angular (Static Site).
+#
+# Déploiement : dashboard.render.com → New → Blueprint → connecter ce dépôt.
+# Render détecte automatiquement ce fichier à la racine.
+# Doc de référence : https://render.com/docs/blueprint-spec
+#
+# ⚠️ Étape manuelle après la 1ère synchro : exécuter les migrations Liquibase
+# contre la base créée (cf. `make render-migrate`, voir README/CI-CD.md).
+# Le schéma n'est pas géré par Django (models managed=False) : Render ne peut
+# donc pas le créer tout seul au déploiement.
+
+databases:
+  - name: rr-postgres
+    databaseName: rr_db
+    user: rr_user
+    plan: free            # 1 Go, expire 30 jours après création (limite Render free tier)
+    region: frankfurt      # Hébergement des données en UE (cohérent avec le volet RGPD)
+
+services:
+  # ─── Backend Django (Docker, gunicorn) ────────────────────────────────────
+  - type: web
+    name: rr-backend
+    runtime: docker
+    region: frankfurt
+    plan: free
+    dockerfilePath: ./rr-backend/Dockerfile
+    dockerContext: ./rr-backend
+    # Le Dockerfile prévoit `runserver` par défaut (dev) ; en production on
+    # sert avec gunicorn, lié au port imposé par Render via $PORT.
+    dockerCommand: "/bin/sh -c \"gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2\""
+    healthCheckPath: /
+    # Déploiement piloté par la CI (job `deploy` de ci.yml via Deploy Hook)
+    # une fois les tests/scans passés, plutôt qu'à chaque push sur main.
+    autoDeployTrigger: 'off'
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: DJANGO_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: rr-postgres
+          property: connectionString
+      # À ajuster si Render suffixe le nom du service (collision de nom) :
+      # vérifier l'URL réelle sur le dashboard après la 1ère synchro.
+      - key: ALLOWED_HOSTS
+        value: rr-backend.onrender.com
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://rr-frontend.onrender.com
+      # Pas de REDIS_URL : le plan free de Render n'inclut pas de Key Value
+      # managé. settings.py retombe automatiquement sur LocMemCache (voir
+      # commentaire dans rr-backend/config/settings.py).
+
+  # ─── Frontend Angular (Static Site) ───────────────────────────────────────
+  - type: web
+    name: rr-frontend
+    runtime: static
+    rootDir: rr-frontend/front-web
+    buildCommand: npm ci && npx ng build --configuration production,render
+    staticPublishPath: ./dist/rr-frontend/browser
+    autoDeployTrigger: 'off'
+    routes:
+      # SPA Angular : toute route inconnue retombe sur index.html (routing client).
+      - type: rewrite
+        source: /*
+        destination: /index.html

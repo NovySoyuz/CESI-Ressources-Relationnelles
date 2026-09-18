@@ -7,6 +7,11 @@ import { environment } from '../../../environments/environment';
 export class ApiService {
 
   private readonly baseUrl = (() => {
+    // Déploiement Render (front/back sur des sous-domaines distincts) :
+    // l'URL du backend est fixée au build, pas de déduction possible via l'origine.
+    if (environment.apiUrl) {
+      return environment.apiUrl;
+    }
     const platform = (globalThis as any)?.Capacitor?.getPlatform?.();
     if (platform === 'android') {
       return `http://${environment.androidApiHost}:8000`;

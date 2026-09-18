@@ -4,7 +4,8 @@
         shell-back shell-db migrate reinstall-front restart-front \
         db-reset db-seed db-rebuild \
         sonar-up sonar sonar-down \
-        zap-baseline zap-full zap
+        zap-baseline zap-full zap \
+        render-migrate
 
 # ─── Couleurs ─────────────────────────────────────────────────────────────────
 GREEN  := \033[0;32m]
@@ -130,6 +131,20 @@ shell-db: ## Shell psql PostgreSQL
 
 migrate: ## Relance uniquement les migrations Liquibase
 	$(COMPOSE) run --rm liquibase
+
+render-migrate: ## Applique le schéma Liquibase sur la base Postgres Render (à faire 1 fois après provisioning du Blueprint)
+	@test -n "$(RENDER_DB_HOST)" && test -n "$(RENDER_DB_NAME)" && test -n "$(RENDER_DB_USER)" && test -n "$(RENDER_DB_PASSWORD)" || \
+		(echo "$(RED)✗ Usage : make render-migrate RENDER_DB_HOST=... RENDER_DB_NAME=... RENDER_DB_USER=... RENDER_DB_PASSWORD=... [RENDER_DB_PORT=5432]$(RESET)"; \
+		 echo "  (valeurs visibles dans le dashboard Render → base rr-postgres → onglet Connect → 'External')"; exit 1)
+	docker run --rm \
+		-v $(CURDIR)/rr-infra/liquibase:/liquibase/changelog \
+		-w /liquibase/changelog \
+		liquibase/liquibase:4.27 \
+		--url="jdbc:postgresql://$(RENDER_DB_HOST):$(or $(RENDER_DB_PORT),5432)/$(RENDER_DB_NAME)?sslmode=require" \
+		--username=$(RENDER_DB_USER) \
+		--password=$(RENDER_DB_PASSWORD) \
+		--changelog-file=db.changelog-master.yaml update
+	@echo "$(GREEN)✓ Schéma Liquibase appliqué sur la base Render.$(RESET)"
 
 reinstall-front: ## Réinstalle les dépendances npm du container frontend (après modif package.json)
 	$(COMPOSE) exec frontend npm install

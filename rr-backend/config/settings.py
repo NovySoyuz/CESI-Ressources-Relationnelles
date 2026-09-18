@@ -69,7 +69,12 @@ DATABASES = {
 # Cache Redis — backend du throttling DRF, partagé entre workers/instances.
 # En test, on isole avec un cache mémoire local pour ne pas dépendre d'un
 # Redis externe ni laisser les compteurs de throttling persister entre runs.
-if TESTING:
+# En production sans REDIS_URL (ex : Render free tier, pas de Redis managé
+# gratuit), on retombe aussi sur LocMemCache : le throttling reste fonctionnel
+# (par instance) même sans Redis, au prix d'un partage des compteurs entre
+# workers d'une même instance seulement (acceptable en mono-instance free tier).
+REDIS_URL = os.getenv('REDIS_URL')
+if TESTING or not REDIS_URL:
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -79,7 +84,7 @@ else:
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
-            'LOCATION': os.getenv('REDIS_URL', 'redis://redis:6379/1'),
+            'LOCATION': REDIS_URL,
         }
     }
 

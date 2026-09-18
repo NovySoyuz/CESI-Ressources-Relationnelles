@@ -20,17 +20,25 @@ lint ──► backend ──┐
 | **docker-scan** | Build des images Docker + scan vulnérabilités **Trivy** (non-bloquant, base de données cachée par jour) |
 | **deploy** | Déclenche les *Deploy Hooks* Render (back + front) — **uniquement sur push `main`** |
 
-## Déploiement Render — statut actuel : ⏸️ en attente
+## Déploiement Render
 
-Le job `deploy` existe déjà dans le pipeline mais **ne fait rien pour l'instant** : il vérifie la présence des secrets GitHub `RENDER_DEPLOY_HOOK_BACKEND` et `RENDER_DEPLOY_HOOK_FRONTEND`, et s'arrête proprement (`::warning::`) tant qu'ils ne sont pas configurés.
+L'infrastructure Render est décrite en Infrastructure-as-Code dans [`render.yaml`](render.yaml) (Render Blueprint) : 1 base Postgres (`rr-postgres`, région Frankfurt/UE), 1 Web Service Docker pour le backend (`rr-backend`, gunicorn), 1 Static Site pour le frontend (`rr-frontend`, build Angular). Les 3 ressources sont créées en une fois via **Dashboard Render → New → Blueprint**.
 
-**Pour l'activer**, une fois les services créés sur Render :
-1. Créer les services Render (PostgreSQL managé, Web Service backend, Web Service/Static Site frontend).
-2. Récupérer l'URL de *Deploy Hook* de chaque service (Render → Settings → Deploy Hook).
-3. Ajouter ces URLs comme secrets du repo GitHub : `Settings → Secrets and variables → Actions` :
+Les services ont `autoDeployTrigger: off` : Render ne redéploie **pas** automatiquement à chaque push. Le déploiement est piloté par le job `deploy` de la CI (*Deploy Hooks*), pour qu'il n'ait lieu qu'après succès des tests/scans — cohérent avec le critère « environnement de déploiement automatisé ».
+
+**Pour activer le déploiement continu** (une fois le Blueprint créé sur Render) :
+1. Dashboard Render → `rr-backend` / `rr-frontend` → *Settings → Deploy Hook* → copier chaque URL.
+2. Ajouter ces URLs comme secrets du repo GitHub : `Settings → Secrets and variables → Actions` :
    - `RENDER_DEPLOY_HOOK_BACKEND`
    - `RENDER_DEPLOY_HOOK_FRONTEND`
-4. Le prochain push sur `main` déclenchera automatiquement le déploiement.
+3. Appliquer le schéma Liquibase sur la base Render **une seule fois** (Django ne le fait pas, `models managed=False`) :
+   ```
+   make render-migrate RENDER_DB_HOST=... RENDER_DB_NAME=... RENDER_DB_USER=... RENDER_DB_PASSWORD=...
+   ```
+   (valeurs dans Render → `rr-postgres` → *Connect* → *External*)
+4. Le prochain push sur `main` (après succès CI) déclenchera le déploiement des deux services.
+
+**Limites du plan gratuit Render** (assumées, à mentionner à l'oral) : base Postgres free supprimée 30 jours après création (upgrade requis pour la pérenniser), web services free mis en veille après 15 min d'inactivité (cold start ~1 min), pas de Redis managé gratuit — le cache Django (throttling DRF) retombe alors sur un cache mémoire local (`LocMemCache`) au lieu de Redis.
 
 ## Points clés pour l'oral
 
