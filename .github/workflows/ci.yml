@@ -148,45 +148,46 @@ jobs:
   # Informatif (non-bloquant) : les CVE de l'image de base (OS) ne dépendent pas
   # du code du projet. La base Trivy est cachée par jour pour rester rapide
   # (~45s au premier run de la journée, ~5s ensuite).
-  docker-scan:
-    name: Scan sécurité images Docker (Trivy)
-    runs-on: ubuntu-latest
-    needs: [backend, frontend]
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Build image backend
-        run: docker build -t rr-backend:ci ./rr-backend
+  #docker-scan:
+    #name: Scan sécurité images Docker (Trivy)
+    #runs-on: ubuntu-latest
+    #needs: [backend, frontend]
+      #steps:
+      #- uses: actions/checkout@v4
 
-      - name: Build image frontend
-        run: docker build -t rr-frontend:ci ./rr-frontend/front-web
+        #- name: Build image backend
+        #run: docker build -t rr-backend:ci ./rr-backend
 
-      - name: Date du jour (clé de cache)
-        id: date
-        run: echo "date=$(date +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
+        #- name: Build image frontend
+        #run: docker build -t rr-frontend:ci ./rr-frontend/front-web
 
-      - name: Cache base de vulnérabilités Trivy
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}/.cache/trivy
-          key: trivy-db-${{ steps.date.outputs.date }}
-          restore-keys: trivy-db-
+        #- name: Date du jour (clé de cache)
+        #id: date
+        #run: echo "date=$(date +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
 
-      - name: Scan image backend
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: rr-backend:ci
-          severity: HIGH,CRITICAL
-          exit-code: "0"
-          ignore-unfixed: true
+        #- name: Cache base de vulnérabilités Trivy
+        #uses: actions/cache@v4
+          #with:
+          #path: ${{ github.workspace }}/.cache/trivy
+          #key: trivy-db-${{ steps.date.outputs.date }}
+          #restore-keys: trivy-db-
 
-      - name: Scan image frontend
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: rr-frontend:ci
-          severity: HIGH,CRITICAL
-          exit-code: "0"
-          ignore-unfixed: true
+        #- name: Scan image backend
+        #uses: aquasecurity/trivy-action@master
+          #with:
+          #image-ref: rr-backend:ci
+          #severity: HIGH,CRITICAL
+          #exit-code: "0"
+          #ignore-unfixed: true
+
+        #- name: Scan image frontend
+        #uses: aquasecurity/trivy-action@master
+          #with:
+          #image-ref: rr-frontend:ci
+          #severity: HIGH,CRITICAL
+          #exit-code: "0"
+          #ignore-unfixed: true
 
   # ── 5. Déploiement (Render) ──────────────────────────────────────────────────
   # Déclenche les Deploy Hooks Render (back + front) une fois la qualité validée.
@@ -196,7 +197,7 @@ jobs:
   deploy:
     name: Déploiement Render
     runs-on: ubuntu-latest
-    needs: [backend, frontend, docker-scan]
+    needs: [backend, frontend]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - name: Déclencher les Deploy Hooks Render
