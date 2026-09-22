@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question générale
+    url: https://github.com/NovySoyuz/CESI-Ressources-Relationnelles/discussions
+    about: Pour toute question qui n'est ni un bug ni une demande d'évolution.
